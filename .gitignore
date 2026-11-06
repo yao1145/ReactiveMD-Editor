@@ -4,3 +4,7 @@ artifacts/
 
 vendor/*
 !vendor/*.tgz
+
+# Agent instructions stay local
+AGENTS.md
+AGENTS-ch.md
