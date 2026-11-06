@@ -7,8 +7,8 @@ import {markdown} from '@codemirror/lang-markdown';
 import {searchKeymap} from '@codemirror/search';
 import {lintGutter,setDiagnostics,setDiagnosticsEffect} from '@codemirror/lint';
 import type {AuthorAnalysis,Diagnostic} from 'reactive-md';
-import type {EditorSurface} from '../surface';
-import type {EditorEdit,EditorSelection as SourceSelection} from '../types';
+import type {EditorSurface} from '../contracts/surface';
+import type {EditorEdit,EditorSelection as SourceSelection} from '../contracts/types';
 import {SourceCoordinates,type SourceChange} from './source-coordinates';
 import type {EditorTransaction} from './types';
 

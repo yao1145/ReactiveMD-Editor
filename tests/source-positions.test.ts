@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {SourcePositionIndex} from '../src/source-positions';
+import {SourcePositionIndex} from '../src/authoring/source-positions';
 
 it.each(['','abc','one\ntwo\n','\nfirst','a\r\nb\nc','a\rb','😀\nx😀y'])('indexes LF/UTF16 positions in %j',source=>{
   const index=new SourcePositionIndex(source);

@@ -6,7 +6,7 @@
  * data are owned by the engine's `reactive-md/authoring` entry.
  */
 
-import type { EditorLocale } from './command-types';
+import type { EditorLocale } from '../contracts/command-types';
 
 export interface EditorToolbarCopy {
   toolbarLabel: string;

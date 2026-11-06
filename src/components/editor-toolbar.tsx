@@ -42,7 +42,7 @@ import {
   readFormatState,
   type EditorEdit,
   type EditorFormatState,
-} from './editor-commands';
+} from '../authoring/editor-commands';
 import {
   createLocalComponentCatalogForOptions,
   filterLocalComponentCatalog,
@@ -55,10 +55,10 @@ import {
   type LocalCompileOptions,
 } from 'reactive-md/authoring';
 import { localCompileOptionsKey } from 'reactive-md';
-import { useEditorLocale } from './locale';
-import { EDITOR_TOOLBAR_COPY } from './editor-i18n';
-import type { EditorLocale } from './types';
-import {type EditorSurface} from './surface';
+import { useEditorLocale } from '../localization/locale';
+import { EDITOR_TOOLBAR_COPY } from '../localization/editor-i18n';
+import type { EditorLocale } from '../contracts/types';
+import {type EditorSurface} from '../contracts/surface';
 
 export interface EditorToolbarProps {
   editorSurface: EditorSurface;

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { EDITOR_CHROME_COPY } from './editor-i18n';
-import { useEditorLocale } from './locale';
-import type { EditorViewMode } from './types';
+import { EDITOR_CHROME_COPY } from '../localization/editor-i18n';
+import { useEditorLocale } from '../localization/locale';
+import type { EditorViewMode } from '../contracts/types';
 
 export function EditorViewBar({ source, mode, onModeChange, sourceId, previewId, hasPreview, allowSplit, toolbar }: {
   source: string;

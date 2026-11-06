@@ -1,4 +1,4 @@
-import type {ReactiveMarkdownEditorProps,EditorSelection,EditorViewMode} from '../types';
+import type {ReactiveMarkdownEditorProps,EditorSelection,EditorViewMode} from '../contracts/types';
 import type {AuthorAnalysis,Diagnostic,SourceRange} from 'reactive-md';
 import type {SourceChange} from './source-coordinates';
 

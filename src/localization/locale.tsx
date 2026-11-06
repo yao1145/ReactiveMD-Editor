@@ -6,7 +6,7 @@
  */
 
 import { createContext, useContext, type ReactNode } from 'react';
-import type { EditorLocale } from './types';
+import type { EditorLocale } from '../contracts/types';
 
 const EditorLocaleContext = createContext<EditorLocale>('en');
 

@@ -51,6 +51,13 @@ completion and insertion stay consistent.
 `reactive-md-editor/commands` re-exports the engine's `reactive-md/authoring`
 commands, so hosts that already depend on the engine can import them there.
 
+## Source layout
+
+`src/` groups code by responsibility: `contracts`, `authoring`, `components`,
+`localization`, `styles` and `codemirror`. See
+[docs/source-layout-en.md](docs/source-layout-en.md) for the directory map and
+import rules, or [中文](docs/source-layout-ch.md).
+
 ## Development
 
 The package resolves the engine from `vendor/reactive-md-0.8.0-next.0.tgz`.

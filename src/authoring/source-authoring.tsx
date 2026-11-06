@@ -21,10 +21,10 @@ import {
   renameLocalBinding,
 } from 'reactive-md';
 import type { Diagnostic, LocalCompileOptions, LocalDocument, SourceRange } from 'reactive-md';
-import type { EditorEdit, EditorLocale, EditorSelection } from './types';
-import { useEditorLocale } from './locale';
+import type { EditorEdit, EditorLocale, EditorSelection } from '../contracts/types';
+import { useEditorLocale } from '../localization/locale';
 import { SourcePositionIndex } from './source-positions';
-import type { EditorSurface } from './surface';
+import type { EditorSurface } from '../contracts/surface';
 
 /* ------------------------------------------------------------------ */
 /* Shared shapes                                                       */

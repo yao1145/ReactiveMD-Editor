@@ -4,9 +4,9 @@
    package can be mounted inside any host page. The internal stylesheets use
    native CSS nesting for the same reason. */
 
-@import './editor-toolbar.css';
-@import './source-authoring.css';
-@import './editor-view-bar.css';
+@import '../components/editor-toolbar.css';
+@import '../authoring/source-authoring.css';
+@import '../components/editor-view-bar.css';
 
 .reactive-md-editor {
   color-scheme: light;

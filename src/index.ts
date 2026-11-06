@@ -23,11 +23,11 @@ export type {
   EditorTransaction,
 } from './codemirror/types';
 export type { SourceChange } from './codemirror/source-coordinates';
-export type { EditorSurface } from './surface';
+export type { EditorSurface } from './contracts/surface';
 export type {
   EditorEdit,
   EditorLocale,
   EditorSelection,
   EditorTheme,
   EditorViewMode,
-} from './types';
+} from './contracts/types';
