@@ -1,6 +1,6 @@
 import {forwardRef,useEffect,useId,useImperativeHandle,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {LocalCompileScheduler,localCompileOptionsKey} from 'reactive-md';
-import type {AuthorAnalysis} from '../../local';
+import type {AuthorAnalysis} from 'reactive-md';
 import type {EditorSurface} from '../surface';
 import type {EditorEdit,EditorSelection,EditorViewMode} from '../types';
 import {EDITOR_CHROME_COPY} from '../editor-i18n';

@@ -1,0 +1,131 @@
+name: Publish npm package
+
+# Manual publish flow for reactive-md-editor using npm trusted publishing
+# (OIDC). Configure a NEW trusted publisher for this repository and workflow on
+# npm; the engine's reactive-md trusted publisher does not cover this package.
+# No NPM_TOKEN secret is needed. If the version is already on the registry, the
+# workflow skips the publish step and still applies the requested dist-tags.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag, or commit SHA to publish
+        required: true
+        default: main
+      dist_tag:
+        description: npm dist-tag to publish under
+        required: true
+        default: next
+        type: choice
+        options:
+          - next
+          - latest
+      update_latest:
+        description: Also move latest to this version
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: editor-npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the selected ref
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Set up Node and the npm registry
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+
+      - name: Upgrade npm for OIDC publishing and dist-tag updates
+        run: npm install -g 'npm@^11.21.0'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read the package version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Target: reactive-md-editor@$version"
+
+      - name: Check whether the version is already published
+        id: registry
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if npm view "reactive-md-editor@$VERSION" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "reactive-md-editor@$VERSION already exists; skipping publish and updating tags only"
+            npm view "reactive-md-editor@$VERSION" version dist.integrity dist.tarball --json
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Typecheck, test, and build
+        if: steps.registry.outputs.published != 'true'
+        run: npm run check
+
+      - name: Pack the release tarball
+        if: steps.registry.outputs.published != 'true'
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/release-package
+          npm pack --ignore-scripts --pack-destination artifacts/release-package
+          tarball="artifacts/release-package/reactive-md-editor-$VERSION.tgz"
+          test -f "$tarball"
+          sha256sum "$tarball"
+
+      - name: Publish to npm
+        if: steps.registry.outputs.published != 'true'
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DIST_TAG: ${{ inputs.dist_tag }}
+        run: |
+          set -euo pipefail
+          npm publish "artifacts/release-package/reactive-md-editor-$VERSION.tgz" \
+            --access public --tag "$DIST_TAG" --ignore-scripts
+
+      - name: Move latest when requested
+        if: inputs.update_latest && inputs.dist_tag != 'latest'
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          npm dist-tag add "reactive-md-editor@$VERSION" latest
+
+      - name: Confirm the published package
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          npm view "reactive-md-editor@$VERSION" version dist.integrity dist.tarball --json
+          npm view reactive-md-editor dist-tags --json

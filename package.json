@@ -1,0 +1,94 @@
+{
+  "name": "reactive-md-editor",
+  "version": "0.1.0-next.0",
+  "description": "CodeMirror 6 source editor for Reactive MD documents.",
+  "keywords": [
+    "markdown",
+    "editor",
+    "codemirror",
+    "reactive",
+    "react"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./codemirror": {
+      "types": "./dist/codemirror/index.d.ts",
+      "import": "./dist/codemirror/index.js"
+    },
+    "./commands": {
+      "types": "./dist/commands.d.ts",
+      "import": "./dist/commands.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./codemirror/styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "npm run build:js && npm run build:types",
+    "build:js": "vite build --config vite.config.ts",
+    "build:types": "tsc -p tsconfig.build.json && node scripts/finalize-declarations.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run test && npm run build && npm run test:package",
+    "notices": "node scripts/generate-notices.mjs && node scripts/append-engine-notices.mjs",
+    "prepack": "npm run build && npm run notices",
+    "test:package": "node scripts/verify-package.mjs"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "reactive-md": "0.8.0-next.0"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-markdown": "6.5.2",
+    "@codemirror/language": "6.13.1",
+    "@codemirror/lint": "6.9.7",
+    "@codemirror/search": "6.7.2",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.15",
+    "@lezer/highlight": "1.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "jsdom": "26.1.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "reactive-md": "file:vendor/reactive-md-0.8.0-next.0-d3ede7a98fc8.tgz",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yao1145/ReactiveMD-Editor.git"
+  },
+  "homepage": "https://github.com/yao1145/ReactiveMD-Editor#readme",
+  "bugs": {
+    "url": "https://github.com/yao1145/ReactiveMD-Editor/issues"
+  }
+}

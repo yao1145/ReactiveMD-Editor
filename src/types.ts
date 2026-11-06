@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import type { Diagnostic, LocalCompileOptions, LocalDocument } from '../local/types';
+import type { Diagnostic, LocalCompileOptions, LocalDocument } from 'reactive-md';
 
 import type { EditorLocale, EditorSelection } from './command-types';
 export type { EditorLocale, EditorSelection, EditorEdit } from './command-types';

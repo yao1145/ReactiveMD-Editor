@@ -6,8 +6,8 @@
  * CM6 consumers can migrate without a behaviour change.
  *
  * This module carries no CSS import, so consumers that only need the component
- * can tree-shake or server-render it. Import `reactive-md/editor/styles.css`
- * for the stylesheet, or use `./library` for the CSS-included bundle.
+ * can tree-shake or server-render it. Import `reactive-md-editor/styles.css`
+ * for the stylesheet, or use the package `./codemirror` entry.
  */
 
 export {

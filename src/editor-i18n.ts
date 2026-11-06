@@ -1,27 +1,12 @@
 /**
- * Typed copy for the source editor: toolbar chrome and command placeholders.
+ * Typed UI copy for the source editor: toolbar chrome and view controls.
  *
  * English strings are the canonical defaults. Chinese strings use the wording
- * shipped in the demo. Default component labels, descriptions, groups and
- * templates are authoring data owned by `src/presets/default-authoring.ts`.
+ * shipped in the demo. Command placeholders and default component authoring
+ * data are owned by the engine's `reactive-md/authoring` entry.
  */
 
 import type { EditorLocale } from './command-types';
-
-export interface EditorCommandCopy {
-  boldPlaceholder: string;
-  italicPlaceholder: string;
-  strikePlaceholder: string;
-  inlineCodePlaceholder: string;
-  linkText: string;
-  imageAlt: string;
-  codeBlockPlaceholder: string;
-  tableHeaders: readonly [string, string, string];
-  tableRows: readonly [
-    readonly [string, string, string],
-    readonly [string, string, string],
-  ];
-}
 
 export interface EditorToolbarCopy {
   toolbarLabel: string;
@@ -110,37 +95,6 @@ export const EDITOR_CHROME_COPY: Record<EditorLocale, EditorChromeCopy> = {
     edit: '编辑',
     split: '并排',
     preview: '预览',
-  },
-};
-
-export const EDITOR_COMMAND_COPY: Record<EditorLocale, EditorCommandCopy> = {
-  en: {
-    boldPlaceholder: 'bold text',
-    italicPlaceholder: 'italic text',
-    strikePlaceholder: 'strikethrough text',
-    inlineCodePlaceholder: 'code',
-    linkText: 'link text',
-    imageAlt: 'example image',
-    codeBlockPlaceholder: 'Write code here',
-    tableHeaders: ['Column 1', 'Column 2', 'Column 3'],
-    tableRows: [
-      ['Example 1', 'Example 2', 'Example 3'],
-      ['Example 4', 'Example 5', 'Example 6'],
-    ],
-  },
-  zh: {
-    boldPlaceholder: '粗体文字',
-    italicPlaceholder: '斜体文字',
-    strikePlaceholder: '删除线文字',
-    inlineCodePlaceholder: '代码',
-    linkText: '链接文字',
-    imageAlt: '示意图',
-    codeBlockPlaceholder: '在这里写代码',
-    tableHeaders: ['列 1', '列 2', '列 3'],
-    tableRows: [
-      ['示例 1', '示例 2', '示例 3'],
-      ['示例 4', '示例 5', '示例 6'],
-    ],
   },
 };
 

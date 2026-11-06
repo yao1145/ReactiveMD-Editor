@@ -6,7 +6,7 @@ import {sourceHighlightStyle} from './highlighting';
 import {markdown} from '@codemirror/lang-markdown';
 import {searchKeymap} from '@codemirror/search';
 import {lintGutter,setDiagnostics,setDiagnosticsEffect} from '@codemirror/lint';
-import type {AuthorAnalysis,Diagnostic} from '../../local';
+import type {AuthorAnalysis,Diagnostic} from 'reactive-md';
 import type {EditorSurface} from '../surface';
 import type {EditorEdit,EditorSelection as SourceSelection} from '../types';
 import {SourceCoordinates,type SourceChange} from './source-coordinates';

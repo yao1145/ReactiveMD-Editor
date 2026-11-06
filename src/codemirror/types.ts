@@ -1,5 +1,5 @@
 import type {ReactiveMarkdownEditorProps,EditorSelection,EditorViewMode} from '../types';
-import type {AuthorAnalysis,Diagnostic,SourceRange} from '../../local';
+import type {AuthorAnalysis,Diagnostic,SourceRange} from 'reactive-md';
 import type {SourceChange} from './source-coordinates';
 
 export interface EditorTransaction {

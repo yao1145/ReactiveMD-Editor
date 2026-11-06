@@ -52,9 +52,9 @@ import {
   localComponentCatalogKey,
   localComponentHelp,
   type LocalComponentCatalogEntry,
-} from '../authoring/extensions';
-import { localCompileOptionsKey } from '../local/options';
-import type { LocalCompileOptions } from '../local/types';
+  type LocalCompileOptions,
+} from 'reactive-md/authoring';
+import { localCompileOptionsKey } from 'reactive-md';
 import { useEditorLocale } from './locale';
 import { EDITOR_TOOLBAR_COPY } from './editor-i18n';
 import type { EditorLocale } from './types';
