@@ -1,5 +1,7 @@
 # reactive-md-editor
 
+**English** · [中文](README-ch.md)
+
 CodeMirror 6 source editor for Reactive MD documents. It renders the Markdown
 source with syntax highlighting, a formatting toolbar, authoring aids and an
 optional preview slot.
