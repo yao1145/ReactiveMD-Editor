@@ -1,4 +1,4 @@
-import {Annotation,Compartment,EditorSelection,EditorState,StateEffect,StateField,type Extension,type TransactionSpec} from '@codemirror/state';
+import {Annotation,Compartment,EditorSelection,EditorState,StateEffect,StateField,type Extension} from '@codemirror/state';
 import {Decoration,EditorView,ViewPlugin,keymap,lineNumbers,drawSelection,highlightActiveLine,highlightActiveLineGutter,placeholder,type DecorationSet,type ViewUpdate} from '@codemirror/view';
 import {defaultKeymap,history,historyKeymap,invertedEffects,isolateHistory,undo,redo,undoDepth,redoDepth,indentWithTab} from '@codemirror/commands';
 import {syntaxHighlighting} from '@codemirror/language';
@@ -73,7 +73,7 @@ export class CodeEditorController {
       this.coordinates,
       lineNumbers(),drawSelection(),highlightActiveLine(),highlightActiveLineGutter(),
       EditorView.editorAttributes.of(view=>({'data-selection-active':String(view.state.selection.ranges.some(range=>!range.empty))})),
-      EditorView.scrollHandler.of((view,range)=>{
+      EditorView.scrollHandler.of((_view,range)=>{
         if(this.revealTarget===null)return false;
         const target=this.revealTarget;this.revealTarget=null;
         if(range.head!==target)return false;

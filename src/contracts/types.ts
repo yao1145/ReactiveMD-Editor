@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Diagnostic, LocalCompileOptions, LocalDocument } from 'reactive-md';
 
-import type { EditorLocale, EditorSelection } from './command-types';
+import type { EditorLocale } from './command-types';
 export type { EditorLocale, EditorSelection, EditorEdit } from './command-types';
 export type EditorTheme = 'light' | 'dark' | 'auto';
 export type EditorViewMode = 'edit' | 'split' | 'preview';
