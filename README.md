@@ -6,15 +6,20 @@ CodeMirror 6 source editor for Reactive MD documents. It renders the Markdown
 source with syntax highlighting, a formatting toolbar, authoring aids and an
 optional preview slot.
 
+`reactive-md-editor@0.1.0` supports the `reactive-md@0.8.x` engine series.
+Install the editor and engine together:
+
 ## Install
 
 ```bash
-npm install reactive-md-editor reactive-md react react-dom
+npm install reactive-md-editor@0.1.0 reactive-md@0.8.0 react@^19.0.0 react-dom@^19.0.0
 ```
 
+`reactive-md` is a peer dependency with the range `^0.8.0`, covering stable
+0.8 releases. React 19 is required, `react-dom` is an optional peer, and the
+package requires Node 22.12 or newer.
+
 The editor bundles CodeMirror, so do not add CodeMirror packages separately.
-`reactive-md` is a peer dependency pinned to `0.8.0-next.0`; install the engine
-release that matches the editor version.
 
 ## Use
 
@@ -49,20 +54,47 @@ completion and insertion stay consistent.
 | `reactive-md-editor/codemirror/styles.css` | Alias of the same stylesheet |
 
 `reactive-md-editor/commands` re-exports the engine's `reactive-md/authoring`
-commands, so hosts that already depend on the engine can import them there.
+commands, so hosts can import the pure text transformations without the React
+component tree.
+
+## Migrating from `reactive-md/editor`
+
+The editor now lives in its own package. Move the import, install
+`reactive-md-editor`, and keep `reactive-md` as the engine dependency.
+
+| Previous import | 0.1.0 import |
+| --- | --- |
+| `reactive-md/editor` | `reactive-md-editor` |
+| `reactive-md/editor/codemirror` | `reactive-md-editor/codemirror` |
+| `reactive-md/editor/styles.css` | `reactive-md-editor/styles.css` |
+
+`ReactiveMarkdownEditor` and `ReactiveMarkdownCodeEditor` remain the public
+component names and resolve to the same component. The new package also exposes
+`reactive-md-editor/codemirror/styles.css` as an alias of its stylesheet.
+
+## Analysis Worker
+
+The editor runs analysis in a standalone browser Worker, emitted as
+`dist/assets/analysis-worker-*.js`. The Worker bundle includes the engine code
+it imports. The library entries keep React and every `reactive-md` subpath
+external, and CodeMirror is bundled into one shared chunk. The packed-consumer
+check fails if the emitted Worker still contains unresolved package imports.
 
 ## Source layout
 
 `src/` groups code by responsibility: `contracts`, `authoring`, `components`,
 `localization`, `styles` and `codemirror`. See
-[docs/source-layout-en.md](docs/source-layout-en.md) for the directory map and
-import rules, or [中文](docs/source-layout-ch.md).
+[source-layout-en.md](https://github.com/yao1145/ReactiveMD-Editor/blob/main/docs/source-layout-en.md)
+for the directory map and import rules, or
+[中文](https://github.com/yao1145/ReactiveMD-Editor/blob/main/docs/source-layout-ch.md).
 
 ## Development
 
-The package resolves the engine from `vendor/reactive-md-0.8.0-next.0.tgz`.
+The development install resolves the engine from
+`vendor/reactive-md-0.8.0-087db7b17a3b.tgz`, downloaded from npm and verified
+against its registry integrity. The filename includes its SHA-256 prefix.
 Place that tarball in `vendor/` before installing; it is a development
-dependency and is not part of the published package.
+dependency and is not part of the published editor package.
 
 ```bash
 npm ci
@@ -70,18 +102,30 @@ npm run check
 ```
 
 `check` runs the type checker, the vitest suite, the Vite build and declaration
-emit. The build produces entries that share one CodeMirror chunk. Engine
-subpaths and React stay external in the library bundles; CodeMirror is bundled.
-The analysis worker is a standalone browser asset, so its bundle includes the
-engine code it imports.
+emit, then packs the package and verifies the packed consumer. The package
+ships `dist`, the two READMEs, the two changelogs, `LICENSE` and
+`THIRD_PARTY_NOTICES.md`.
 
 ## Release
 
-1. Update `version` in `package.json` and add release notes to this README if
-   the public surface changed.
-2. Run `npm run check` from a clean install.
-3. Run the **Publish npm package** workflow on GitHub with the target ref and
-   dist-tag.
+1. Confirm that the vendor tarball matches the final `reactive-md@0.8.0`
+   release. If engine contents change, update `devDependencies.reactive-md`
+   to the new content-addressed filename, refresh the lockfile, and rebuild.
+2. Run `npm run notices`. The Worker bundles engine code, so
+   `THIRD_PARTY_NOTICES.md` must reflect the stable engine.
+3. Run `npm run check` from a clean install. The workflow also runs
+   `npm run notices` followed by
+   `git diff --exit-code -- THIRD_PARTY_NOTICES.md`, because the release pack
+   uses `--ignore-scripts`.
+4. Publish `reactive-md@0.8.0` to npm.
+5. Publish `reactive-md-editor@0.1.0` with the **Publish npm package** workflow
+   and `dist_tag=latest` for the stable release. The workflow confirms that
+   `reactive-md@0.8.0` exists on the registry before publishing a new editor
+   version.
+
+Keep `update_latest=false` for candidate trials, so a `next` publish does not
+move `latest`. A stable `dist_tag=latest` publish sets the tag directly and does
+not use the extra `update_latest` step.
 
 Publishing uses npm trusted publishing (OIDC). The `reactive-md-editor`
 package needs its own trusted publisher on npm for this repository and
@@ -89,4 +133,6 @@ package needs its own trusted publisher on npm for this repository and
 `NPM_TOKEN` secret is used. The workflow skips publishing when the version
 already exists and only applies the requested dist-tags.
 
-Candidate tarball filenames include a SHA256 prefix. Use the exact vendor filenames in package.json; update those paths and lockfile integrity whenever package contents change.
+Candidate tarball filenames include a SHA256 prefix. Use the exact vendor
+filenames in `package.json`; update those paths and lockfile integrity whenever
+package contents change.

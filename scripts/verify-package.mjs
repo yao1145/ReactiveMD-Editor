@@ -12,7 +12,9 @@ function run(args, cwd=root) {
 }
 const npm=args=>run([process.env.npm_execpath,...args]);
 const archive=JSON.parse(npm(['pack','--ignore-scripts','--json','--pack-destination',consumer]))[0];
-assert.ok(archive.files.some(f=>f.path==='THIRD_PARTY_NOTICES.md'));
+for (const required of ['THIRD_PARTY_NOTICES.md','LICENSE','README.md','README-ch.md','CHANGELOG.md','CHANGELOG-ch.md','dist/styles.css']) {
+  assert.ok(archive.files.some(f=>f.path===required),`Packed archive is missing ${required}`);
+}
 const pkg=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));
 const vendor=join(root,pkg.devDependencies['reactive-md'].slice(5));
 writeFileSync(join(consumer,'package.json'),JSON.stringify({private:true,type:'module',dependencies:{
@@ -38,7 +40,10 @@ run(['smoke.mjs'],consumer);
 writeFileSync(join(consumer,'consumer.ts'),"import {ReactiveMarkdownEditor,type ReactiveMarkdownEditorProps} from 'reactive-md-editor';\nimport {ReactiveMarkdownCodeEditor} from 'reactive-md-editor/codemirror';\nimport {insertTemplate} from 'reactive-md-editor/commands';\nvoid ReactiveMarkdownEditor; void ReactiveMarkdownCodeEditor; void insertTemplate; const p:ReactiveMarkdownEditorProps={value:'hello',onChange(){}}; void p;\n");
 writeFileSync(join(consumer,'tsconfig.json'),JSON.stringify({compilerOptions:{target:'ES2022',module:'NodeNext',moduleResolution:'NodeNext',strict:true,skipLibCheck:false,noEmit:true},include:['consumer.ts']}));
 run([join(consumer,'node_modules/typescript/bin/tsc'),'-p','tsconfig.json'],consumer);
-for(const name of readdirSync(join(root,'dist/assets')).filter(f=>f.startsWith('analysis-worker'))) {
+const workers=readdirSync(join(root,'dist/assets')).filter(f=>f.startsWith('analysis-worker') && f.endsWith('.js'));
+assert.ok(workers.length>0,'Build is missing the analysis Worker asset');
+for(const name of workers) {
+  assert.ok(archive.files.some(f=>f.path===`dist/assets/${name}`),'Packed archive is missing the analysis Worker asset');
   const source=readFileSync(join(root,'dist/assets',name),'utf8');
   assert.ok(!/from\s*['"]reactive-md(?:\/[^'"]*)?['"]/.test(source),'Worker still has unresolved package imports');
 }

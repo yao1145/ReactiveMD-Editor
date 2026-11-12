@@ -3,7 +3,9 @@ name: Publish npm package
 # Manual publish flow for reactive-md-editor using npm trusted publishing
 # (OIDC). Configure a NEW trusted publisher for this repository and workflow on
 # npm; the engine's reactive-md trusted publisher does not cover this package.
-# No NPM_TOKEN secret is needed. If the version is already on the registry, the
+# No NPM_TOKEN secret is needed. Publish reactive-md@0.8.0 before a new editor
+# version. For the stable 0.1.0 release use dist_tag=latest; candidate trials use
+# next with update_latest=false. If the version is already on the registry, the
 # workflow skips the publish step and still applies the requested dist-tags.
 
 on:
@@ -14,7 +16,7 @@ on:
         required: true
         default: main
       dist_tag:
-        description: npm dist-tag to publish under
+        description: npm dist-tag; use latest for the stable 0.1.0 release, next for candidate trials
         required: true
         default: next
         type: choice
@@ -22,9 +24,9 @@ on:
           - next
           - latest
       update_latest:
-        description: Also move latest to this version
+        description: Also move latest to this version; keep false for candidate trials
         required: true
-        default: true
+        default: false
         type: boolean
 
 permissions:
@@ -84,9 +86,33 @@ jobs:
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Require the stable engine release
+        if: steps.registry.outputs.published != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine_version=$(node -p "require('reactive-md/package.json').version")
+          if [ "$engine_version" != '0.8.0' ]; then
+            echo "Refresh the editor vendor tarball and lockfile to reactive-md@0.8.0 before publishing; installed: $engine_version" >&2
+            exit 1
+          fi
+          if ! npm view reactive-md@0.8.0 version >/dev/null 2>&1; then
+            echo "reactive-md@0.8.0 is not on the registry; publish the stable engine first" >&2
+            exit 1
+          fi
+          npm view reactive-md@0.8.0 version dist.integrity --json
+
       - name: Typecheck, test, and build
         if: steps.registry.outputs.published != 'true'
         run: npm run check
+
+      - name: Refresh and verify third-party notices
+        if: steps.registry.outputs.published != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run notices
+          git diff --exit-code -- THIRD_PARTY_NOTICES.md
 
       - name: Pack the release tarball
         if: steps.registry.outputs.published != 'true'
@@ -112,6 +138,14 @@ jobs:
           npm publish "artifacts/release-package/reactive-md-editor-$VERSION.tgz" \
             --access public --tag "$DIST_TAG" --ignore-scripts
 
+      - name: Update the requested tag for an existing version
+        if: steps.registry.outputs.published == 'true'
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DIST_TAG: ${{ inputs.dist_tag }}
+        run: npm dist-tag add "reactive-md-editor@$VERSION" "$DIST_TAG"
+
       - name: Move latest when requested
         if: inputs.update_latest && inputs.dist_tag != 'latest'
         shell: bash
@@ -127,5 +161,13 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          npm view "reactive-md-editor@$VERSION" version dist.integrity dist.tarball --json
-          npm view reactive-md-editor dist-tags --json
+          for attempt in $(seq 1 30); do
+            if npm view "reactive-md-editor@$VERSION" version dist.integrity dist.tarball --json --prefer-online --fetch-retries=0 --fetch-timeout=15000; then
+              npm view reactive-md-editor dist-tags --json --prefer-online
+              exit 0
+            fi
+            echo "Waiting for npm processing ($attempt/30)"
+            sleep 10
+          done
+          echo "npm accepted the upload but the version is still unavailable; inspect registry processing before retrying publication" >&2
+          exit 1
