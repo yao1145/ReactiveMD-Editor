@@ -1181,7 +1181,7 @@ export function EditorToolbar({
           onKeyDown={(event) => handleTriggerKeyDown('native', event)}
         >
           <Icon name="sparkle" className="editor-toolbar-components-icon-full" />
-          <Icon name="plus" className="editor-toolbar-components-icon-compact" />
+          <Icon name="sparkle" className="editor-toolbar-components-icon-compact" />
           <span className="editor-toolbar-components-label editor-toolbar-components-label-full">{copy.componentsLabel}</span>
           <span className="editor-toolbar-components-label editor-toolbar-components-label-compact">{copy.componentsCompactLabel}</span>
         </ToolbarButton>

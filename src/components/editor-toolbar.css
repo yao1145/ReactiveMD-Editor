@@ -857,6 +857,8 @@
     }
 
     .editor-toolbar-slot-native {
+      flex-shrink: 1;
+      min-width: 0;
       margin-left: 1px;
     }
 
@@ -891,15 +893,14 @@
       padding: 0 3px;
     }
 
+    .editor-toolbar-insert-label,
     .editor-toolbar-insert-trigger .editor-toolbar-chevron {
       display: none;
     }
 
-    .editor-toolbar-insert-trigger {
-      display: none;
-    }
-
     .editor-toolbar-components-trigger {
+      flex-shrink: 1;
+      width: auto;
       min-width: 0;
       gap: 3px;
       padding: 0 6px 0 5px;
@@ -925,6 +926,9 @@
 
     .editor-toolbar-components-label-compact {
       display: inline;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .editor-toolbar-history {
@@ -1021,9 +1025,9 @@
     }
   }
 
-  /* Touch targets ------------------------------------------------------ */
+  /* Keep the compact mobile row independent of the primary pointer. */
 
-  @media (pointer: coarse) {
+  @media (pointer: coarse) and (min-width: 641px) {
     .editor-toolbar-button {
       width: 44px;
       height: 44px;
@@ -1042,7 +1046,11 @@
     .editor-toolbar-list-trigger {
       min-width: 44px;
     }
+  }
 
+  /* Touch targets inside menus retain their larger hit areas. */
+
+  @media (pointer: coarse) {
     .editor-toolbar-menu-item,
     .editor-toolbar-native-item {
       min-height: 44px;
