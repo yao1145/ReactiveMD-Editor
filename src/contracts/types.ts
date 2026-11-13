@@ -35,5 +35,9 @@ export interface ReactiveMarkdownEditorProps {
   document?: LocalDocument | null;
   toolbar?: boolean;
   authoring?: boolean;
+  /** Host content at the far left of the editor toolbar. */
+  toolbarLeading?: ReactNode;
+  /** Host content inside the history group, immediately before undo. */
+  toolbarStatus?: ReactNode;
   onExport?(): void;
 }

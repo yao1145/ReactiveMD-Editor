@@ -74,6 +74,10 @@ export interface EditorToolbarProps {
   disabled?: boolean;
   /** Same compile options as the preview; drives the component catalog. */
   compileOptions?: LocalCompileOptions;
+  /** Host content at the far left of the toolbar. */
+  leading?: ReactNode;
+  /** Host content immediately before the history controls. */
+  status?: ReactNode;
 }
 
 type TextSelection = { start: number; end: number };
@@ -545,6 +549,8 @@ export function EditorToolbar({
   showExport = false,
   disabled = false,
   compileOptions,
+  leading,
+  status,
 }: EditorToolbarProps): ReactElement {
   const inputSurface=editorSurface;
   const rootRef = useRef<HTMLDivElement>(null);
@@ -916,6 +922,7 @@ export function EditorToolbar({
       ref={rootRef}
       onKeyDown={handleToolbarKeyDown}
     >
+      {leading ? <div className="editor-toolbar-host-leading">{leading}</div> : null}
       <div className="editor-toolbar-slot">
         <ToolbarButton
           toolbarId="heading"
@@ -1173,7 +1180,8 @@ export function EditorToolbar({
           onClick={() => toggleMenu('native')}
           onKeyDown={(event) => handleTriggerKeyDown('native', event)}
         >
-          <Icon name="sparkle" />
+          <Icon name="sparkle" className="editor-toolbar-components-icon-full" />
+          <Icon name="plus" className="editor-toolbar-components-icon-compact" />
           <span className="editor-toolbar-components-label editor-toolbar-components-label-full">{copy.componentsLabel}</span>
           <span className="editor-toolbar-components-label editor-toolbar-components-label-compact">{copy.componentsCompactLabel}</span>
         </ToolbarButton>
@@ -1264,6 +1272,7 @@ export function EditorToolbar({
       </div>
 
       <div className="editor-toolbar-history" role="group" aria-label={copy.historyLabel}>
+        {status ? <div className="editor-toolbar-host-status">{status}</div> : null}
         <ToolbarButton
           toolbarId="undo"
           label={copy.undo}
@@ -1326,6 +1335,7 @@ export function EditorToolbar({
               style={menuPlacement ?? undefined}
               onKeyDown={(event) => moveMenuFocus(event, menuPanelRef.current)}
             >
+              {status ? <div className="editor-toolbar-more-status">{status}</div> : null}
               <button
                 type="button"
                 role="menuitem"
@@ -1337,6 +1347,20 @@ export function EditorToolbar({
                 <Icon name="link" className="editor-toolbar-menu-icon" />
                 <span>{copy.linkMenuItem}</span>
               </button>
+              {insertItems.map((item) => (
+                <button
+                  key={item.labelKey}
+                  type="button"
+                  role="menuitem"
+                  tabIndex={-1}
+                  className="editor-toolbar-menu-item editor-toolbar-more-item"
+                  onMouseDown={keepEditorFocus}
+                  onClick={() => applySimple(item.command)}
+                >
+                  <Icon name={item.icon} className="editor-toolbar-menu-icon" />
+                  <span>{item.label}</span>
+                </button>
+              ))}
               <button
                 type="button"
                 role="menuitem"

@@ -120,6 +120,7 @@ export class CodeEditorController {
         '.cm-scroller':{fontFamily:'var(--font-mono, ui-monospace, monospace)',lineHeight:'var(--leading-normal, 1.6)',overflow:'auto'},
         '.cm-content':{padding:'12px 0',minHeight:'100%'},
         '.cm-line':{padding:'0 14px'},'.cm-gutters':{backgroundColor:'var(--code-bg-deep)',color:'var(--code-muted)',border:'none'},
+        '.cm-lineNumbers .cm-gutterElement':{padding:'0 1px 0 2px',minWidth:'14px'},
         '.cm-activeLine':{backgroundColor:'var(--surface-hover)'},'.cm-activeLineGutter':{backgroundColor:'var(--surface-active)'},
         '&[data-selection-active=true] .cm-activeLine':{backgroundColor:'transparent'},
         '.cm-cursor':{borderLeftColor:'var(--ink)'},'&.cm-focused':{outline:'none'},

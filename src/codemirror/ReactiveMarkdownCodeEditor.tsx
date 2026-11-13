@@ -127,7 +127,7 @@ export const ReactiveMarkdownCodeEditor=forwardRef<ReactiveMarkdownCodeEditorHan
     <div className="editor-frame" ref={frame} data-editor-view={currentView} style={{height:cssSize(height),minHeight:cssSize(minHeight)}}>
       {toolbar?<EditorToolbar editorSurface={surface} onEdit={applyEdit} onUndo={()=>controller.current?.undo()} onRedo={()=>controller.current?.redo()}
         canUndo={status.undo} canRedo={status.redo} onExport={props.onExport} showExport={typeof props.onExport==='function'} disabled={locked}
-        compileOptions={props.compileOptions}/>:null}
+        compileOptions={props.compileOptions} leading={props.toolbarLeading} status={props.toolbarStatus}/>:null}
       <div className="editor-workspace" data-view={currentView}>
         <div id={`${id}-source`} hidden={currentView==='preview'} className={`editor-shell${status.composing?' is-composing':''}`}>
           <div className="rmd-cm6-host" ref={host}/>
