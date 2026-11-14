@@ -35,6 +35,9 @@ export interface ReactiveMarkdownEditorProps {
   document?: LocalDocument | null;
   toolbar?: boolean;
   authoring?: boolean;
+  /** Set when a `MobileDocBar` beside the editor owns the view switch. The
+   * editor then hides its footer switch and character count on phones. */
+  mobileBar?: boolean;
   /** Host content at the far left of the editor toolbar. */
   toolbarLeading?: ReactNode;
   /** Host content inside the history group, immediately before undo. */

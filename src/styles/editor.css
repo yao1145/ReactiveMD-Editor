@@ -291,13 +291,3 @@
 .reactive-md-editor .editor-workspace[data-view="split"] > .editor-preview {
   border-left: 1px solid var(--line);
 }
-
-@container editor-frame (max-width: 600px) {
-  .reactive-md-editor .editor-workspace[data-view="split"] {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .reactive-md-editor .editor-workspace[data-view="split"] > .editor-preview {
-    display: none;
-  }
-}

@@ -24,6 +24,7 @@ Keep these paths; package exports and Vite entries resolve them.
 | `components/` | Toolbar and view bar, each with a sibling CSS file |
 | `localization/` | Locale context and UI copy tables |
 | `styles/` | `editor.css` theme tokens and stylesheet imports |
+| `mobile/` | Narrow-screen adaptation: viewport and container queries, the absent-split hook, compact menu placement and the optional `MobileDocBar` |
 | `codemirror/` | React shell, controller, CM6 types, source coordinates, highlighting, analysis worker, CM6 CSS |
 
-Imports between groups use direct relative paths; no group barrel. Component CSS sits beside its component and is pulled into `styles/editor.css`. The analysis worker must stay beside the editor shell or its `new URL` reference must move with it. Engine code comes from the public `reactive-md` and `reactive-md/authoring` specifiers.
+Imports between groups use direct relative paths; no group barrel. Component CSS sits beside its component and is pulled into `styles/editor.css`; mobile-only overrides are collected in `mobile/mobile.css`. The analysis worker must stay beside the editor shell or its `new URL` reference must move with it. Engine code comes from the public `reactive-md` and `reactive-md/authoring` specifiers.

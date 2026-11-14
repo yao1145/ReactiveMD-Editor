@@ -7,6 +7,7 @@ import {EDITOR_CHROME_COPY} from '../localization/editor-i18n';
 import {EditorLocaleProvider} from '../localization/locale';
 import {EditorToolbar} from '../components/editor-toolbar';
 import {EditorViewBar} from '../components/editor-view-bar';
+import {useNarrowEditor} from '../mobile/use-narrow-editor';
 import {AuthoringPanel} from '../authoring/source-authoring';
 import {CodeEditorController,type ControllerOptions} from './controller';
 import type {EditorAuthorAnalysis,ReactiveMarkdownCodeEditorHandle,ReactiveMarkdownCodeEditorProps} from './types';
@@ -18,7 +19,7 @@ const cssSize=(size:number|string)=>typeof size==='number'?`${size}px`:size;
 /** Viewport-rendered source editor. One mounted EditorView owns its DOM and history. */
 export const ReactiveMarkdownCodeEditor=forwardRef<ReactiveMarkdownCodeEditorHandle,ReactiveMarkdownCodeEditorProps>(function ReactiveMarkdownCodeEditor(props,ref){
   const {value,locale='en',theme='auto',preview,viewMode,defaultViewMode='edit',height=560,minHeight=280,
-    readOnly=false,disabled=false,toolbar=true,authoring=true}=props;
+    readOnly=false,disabled=false,toolbar=true,authoring=true,mobileBar=false}=props;
   const generatedId=useId(),id=props.id??`reactive-md-code-editor-${generatedId.replace(/:/g,'')}`;
   const copy=EDITOR_CHROME_COPY[locale];
   const frame=useRef<HTMLDivElement>(null),host=useRef<HTMLDivElement>(null),controller=useRef<CodeEditorController|null>(null);
@@ -26,7 +27,7 @@ export const ReactiveMarkdownCodeEditor=forwardRef<ReactiveMarkdownCodeEditorHan
   const [source,setSource]=useState(value),sourceRef=useRef(source);sourceRef.current=source;
   const [status,setStatus]=useState({undo:false,redo:false,composing:false});
   const statusRef=useRef(status);
-  const [narrow,setNarrow]=useState(false),[internalView,setInternalView]=useState<EditorViewMode>(defaultViewMode);
+  const [internalView,setInternalView]=useState<EditorViewMode>(defaultViewMode);
   const [workerAnalysis,setWorkerAnalysis]=useState<EditorAuthorAnalysis|null>(null);
   const scheduler=useRef<LocalCompileScheduler|null>(null);
   const optionsKey=localCompileOptionsKey(props.compileOptions),keyRef=useRef(optionsKey);keyRef.current=optionsKey;
@@ -83,12 +84,7 @@ export const ReactiveMarkdownCodeEditor=forwardRef<ReactiveMarkdownCodeEditorHan
     acknowledgements.current=[];
     controller.current?.setExternal(value,reset);sourceRef.current=value;setSource(value);
   },[value,props.documentKey]);
-  useLayoutEffect(()=>{
-    const element=frame.current;if(!element)return;
-    const measure=()=>setNarrow(element.clientWidth<=600);measure();
-    if(typeof ResizeObserver==='undefined'){window.addEventListener('resize',measure);return()=>window.removeEventListener('resize',measure);}
-    const observer=new ResizeObserver(measure);observer.observe(element);return()=>observer.disconnect();
-  },[]);
+  const narrow=useNarrowEditor(frame);
   const privateAnalysis=authoring&&props.analysis===undefined;
   useEffect(()=>{
     if(!privateAnalysis)return;
@@ -123,7 +119,7 @@ export const ReactiveMarkdownCodeEditor=forwardRef<ReactiveMarkdownCodeEditorHan
   const changeView=(mode:EditorViewMode)=>{if(viewMode===undefined)setInternalView(mode);props.onViewModeChange?.(mode);};
   const locked=readOnly||disabled;
   return <EditorLocaleProvider locale={locale}><div className={`reactive-md-editor rmd-cm6${props.className?` ${props.className}`:''}`}
-    data-editor-theme={theme} lang={locale==='zh'?'zh-CN':'en'} style={props.style} role="group" aria-label={copy.region} aria-disabled={locked||undefined} inert={disabled||undefined}>
+    data-editor-theme={theme} data-mobile-bar={mobileBar?'' : undefined} lang={locale==='zh'?'zh-CN':'en'} style={props.style} role="group" aria-label={copy.region} aria-disabled={locked||undefined} inert={disabled||undefined}>
     <div className="editor-frame" ref={frame} data-editor-view={currentView} style={{height:cssSize(height),minHeight:cssSize(minHeight)}}>
       {toolbar?<EditorToolbar editorSurface={surface} onEdit={applyEdit} onUndo={()=>controller.current?.undo()} onRedo={()=>controller.current?.redo()}
         canUndo={status.undo} canRedo={status.redo} onExport={props.onExport} showExport={typeof props.onExport==='function'} disabled={locked}

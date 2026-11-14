@@ -31,3 +31,6 @@ export type {
   EditorTheme,
   EditorViewMode,
 } from './contracts/types';
+
+export { MobileDocBar } from './mobile/mobile-doc-bar';
+export type { MobileDocBarLabels } from './mobile/mobile-doc-bar';

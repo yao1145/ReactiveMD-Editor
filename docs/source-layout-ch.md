@@ -24,6 +24,7 @@
 | `src/contracts/` | 共享契约。`types.ts` 存放 props、语言、主题、视图模式与编辑类型。`surface.ts` 定义 `EditorSurface`，即工具栏和编辑面板读取编辑器、订阅更新和监听按键的接口。`command-types.ts` 重新导出引擎的 authoring 类型，让命令相关模块共用一处类型来源。 |
 | `src/authoring/` | 源码编辑辅助。`source-authoring.tsx` 是提供补全、格式化和绑定重命名的面板，所有操作返回 `EditorEdit`。`source-positions.ts` 是 LF 位置索引。`editor-commands.ts`、`native-components.ts` 和 `extended-native-components.ts` 保留编辑器内部的引擎命令与原生组件目录导入路径。`source-authoring.css` 提供面板样式。 |
 | `src/components/` | 编辑器外围界面。`editor-toolbar.tsx` 渲染格式工具栏，并从选区推导当前格式状态。`editor-view-bar.tsx` 渲染字数与视图模式栏。每个组件自带同名 CSS 文件。 |
+| `src/mobile/` | 窄屏适配。`mobile.css` 汇总按容器与视口触发的紧凑规则和 `MobileDocBar` 样式。`use-narrow-editor.ts` 跟踪编辑器容器宽度，`use-compact-menu-placement.ts` 把工具栏菜单限制在视口内，`mobile-doc-bar.tsx` 是宿主可选的移动端文档栏。 |
 | `src/localization/` | `locale.tsx` 提供编辑器私有的语言上下文与 `useEditorLocale`。`editor-i18n.ts` 存放工具栏、视图栏和界面文案表。 |
 | `src/styles/` | `editor.css` 是样式汇总入口。它在 `.reactive-md-editor` 下定义主题变量，并用 `@import` 引入组件与编辑面板样式。 |
 | `src/codemirror/` | CodeMirror 集成。`ReactiveMarkdownCodeEditor.tsx` 是 React 外壳。`controller.ts` 持有 `EditorView`、历史记录、诊断与源码变更流程。`types.ts` 存放 props、handle 与 transaction 类型。`source-coordinates.ts` 在 CM6 的 LF 文本与原始源码之间映射。`highlighting.ts` 定义语法高亮样式。`analysis-worker.ts` 启动本地编译 Worker，作为独立的浏览器资源。`codemirror.css` 提供 CM6 区域样式。 |
@@ -38,7 +39,7 @@
 - `localization/` 引入 `contracts/`。
 - `components/` 与 `authoring/` 引入 `contracts/` 和 `localization/`。
 - `codemirror/` 组合全部分组，是唯一挂载它们的目录。
-- `styles/editor.css` 引入 `components/editor-toolbar.css`、`authoring/source-authoring.css` 与 `components/editor-view-bar.css`。
+- `styles/editor.css` 引入 `components/editor-toolbar.css`、`authoring/source-authoring.css`、`components/editor-view-bar.css` 与 `mobile/mobile.css`。
 
 引擎保持为公开依赖：编辑器代码从 `reactive-md` 和 `reactive-md/authoring` 引入。本地开发使用 `vendor/` 中固定版本的 tarball，编辑器不链接同级引擎源码目录。
 

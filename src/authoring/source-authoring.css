@@ -390,27 +390,4 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
-  @media (max-width: 640px) {
-    .authoring-bar,
-    .authoring-body {
-      padding: var(--space-2);
-    }
-
-    .authoring-button,
-    .authoring-binding-chip,
-    .authoring-location,
-    .authoring-rename-input,
-    .authoring-completion-item {
-      min-height: var(--control-height-lg);
-    }
-
-    .authoring-rename-input {
-      flex-basis: 100%;
-    }
-
-    .authoring-completion-list {
-      max-height: 180px;
-    }
-  }
 }

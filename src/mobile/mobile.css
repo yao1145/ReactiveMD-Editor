@@ -1,0 +1,546 @@
+/* Narrow-screen adaptation for the editor and the optional document bar.
+
+   Everything in this file is mobile-only: desktop layout, metrics and
+   behaviour are unchanged. Container queries follow the editor frame; viewport
+   queries cover phone widths and coarse pointers. Component CSS keeps its
+   rules beside the component, so the mobile overrides live together here. */
+
+/* Host-facing mobile document bar ------------------------------------- */
+
+/* The bar sits beside the editor rather than inside it, so it redefines the
+   same tokens the editor uses. `data-editor-theme` mirrors the editor's
+   `theme` prop; without it the bar falls back to the host page values. */
+
+.mobile-doc-bar {
+  display: none;
+  color-scheme: light;
+  --md-bar-surface: var(--surface, #ffffff);
+  --md-bar-surface-raised: var(--surface, #ffffff);
+  --md-bar-ink: var(--ink, #232323);
+  --md-bar-ink-muted: var(--ink-muted, #6f6f6c);
+  --md-bar-line: var(--line, #e4e3df);
+  --md-bar-neutral: var(--neutral-soft, #f1f0ed);
+}
+
+.mobile-doc-bar[data-editor-theme="dark"] {
+  color-scheme: dark;
+  --md-bar-surface: #1b1b1d;
+  --md-bar-surface-raised: #202022;
+  --md-bar-ink: #ecebe7;
+  --md-bar-ink-muted: #9b9993;
+  --md-bar-line: #343436;
+  --md-bar-neutral: #26262a;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mobile-doc-bar[data-editor-theme="auto"] {
+    color-scheme: dark;
+    --md-bar-surface: #1b1b1d;
+    --md-bar-surface-raised: #202022;
+    --md-bar-ink: #ecebe7;
+    --md-bar-ink-muted: #9b9993;
+    --md-bar-line: #343436;
+    --md-bar-neutral: #26262a;
+  }
+}
+
+.mobile-doc-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  min-width: 0;
+  color: var(--md-bar-ink);
+  font-size: var(--text-md, 16px);
+  font-weight: var(--weight-semibold, 600);
+}
+
+.mobile-doc-title svg {
+  flex: 0 0 auto;
+  color: var(--md-bar-ink-muted);
+}
+
+.mobile-doc-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-view-switch {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--md-bar-neutral);
+  border: 1px solid var(--md-bar-line);
+  border-radius: var(--radius-pill, 999px);
+}
+
+.mobile-view-switch button {
+  min-height: 32px;
+  padding: 0 14px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill, 999px);
+  color: var(--md-bar-ink-muted);
+  font: inherit;
+  font-size: var(--text-sm, 14px);
+  font-weight: var(--weight-semibold, 600);
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast, 160ms) var(--ease-standard, cubic-bezier(0.22, 0.61, 0.36, 1)),
+    color var(--motion-fast, 160ms) var(--ease-standard, cubic-bezier(0.22, 0.61, 0.36, 1)),
+    box-shadow var(--motion-fast, 160ms) var(--ease-standard, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+.mobile-view-switch button[aria-pressed="true"] {
+  background: var(--md-bar-surface-raised);
+  color: var(--md-bar-ink);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--md-bar-ink) 12%, transparent);
+}
+
+.mobile-doc-bar[data-editor-theme="dark"] .mobile-view-switch button[aria-pressed="true"] {
+  background: var(--md-bar-line);
+}
+
+@media (prefers-color-scheme: dark) {
+  .mobile-doc-bar[data-editor-theme="auto"] .mobile-view-switch button[aria-pressed="true"] {
+    background: var(--md-bar-line);
+  }
+}
+
+.mobile-view-switch button:focus-visible {
+  outline: var(--focus-outline, 2px solid #3f5f8f);
+  outline-offset: 1px;
+}
+
+@media (max-width: 620px) {
+  .mobile-doc-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3, 12px);
+    padding: 10px var(--space-3, 12px);
+    background: var(--md-bar-surface);
+    border-bottom: 1px solid var(--md-bar-line);
+  }
+}
+
+/* Editor adaptation --------------------------------------------------- */
+
+.reactive-md-editor {
+  /* Gutter and diagnostic markers -------------------------------------- */
+
+  /* Phones get a narrow gutter and a compact marker column. Markers keep the
+     engine's severity colours but render as small dots instead of the default
+     circled cross and triangle artwork. */
+
+  @container editor-frame (max-width: 600px) {
+    .cm-gutters {
+      font-size: 11.5px;
+    }
+
+    .cm-lineNumbers .cm-gutterElement {
+      padding-inline: 1px 0;
+      min-width: 10px;
+    }
+
+    .cm-gutter-lint {
+      width: 11px !important;
+    }
+
+    .cm-gutter-lint .cm-gutterElement {
+      padding: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+    }
+
+    /* The dot sits on the first visual line of its diagnostic, not centred in
+       a wrapped block. */
+    .cm-lint-marker {
+      width: 7px;
+      height: 7px;
+      margin: 7px 2px 0 0;
+    }
+
+    .cm-lint-marker-error,
+    .cm-lint-marker-warning {
+      content: none;
+    }
+
+    .cm-lint-marker-error::after,
+    .cm-lint-marker-warning::after {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    .cm-lint-marker-error::after {
+      background: #d95050;
+    }
+
+    .cm-lint-marker-warning::after {
+      background: #ddab37;
+    }
+  }
+
+  /* Container compact mode --------------------------------------------- */
+
+  @container editor-frame (max-width: 500px) {
+    .editor-toolbar {
+      gap: 1px;
+    }
+
+    .editor-toolbar-heading-trigger {
+      padding-inline: 5px;
+    }
+
+    .editor-toolbar-insert-trigger {
+      gap: 2px;
+      padding-inline: 4px;
+    }
+
+    .editor-toolbar-components-trigger {
+      gap: 3px;
+      padding-inline: 5px;
+    }
+
+    .editor-toolbar-history > .editor-toolbar-desktop-only {
+      display: none;
+    }
+
+    .editor-toolbar-slot.editor-toolbar-mobile-only {
+      display: inline-flex;
+    }
+
+    .editor-toolbar-more-menu .editor-toolbar-more-link {
+      display: none;
+    }
+  }
+
+  /* Mobile control set ------------------------------------------------- */
+
+  @media (max-width: 640px) {
+    .editor-toolbar {
+      flex-wrap: nowrap;
+      gap: 0;
+      padding: 4px 2px;
+    }
+
+    .editor-toolbar-button {
+      width: 28px;
+      height: 28px;
+    }
+
+    .editor-toolbar-desktop-only {
+      display: none !important;
+    }
+
+    .editor-toolbar-slot.editor-toolbar-mobile-only {
+      display: inline-flex;
+    }
+
+    .editor-toolbar-slot-native {
+      flex-shrink: 1;
+      min-width: 0;
+      margin-left: 1px;
+    }
+
+    .editor-toolbar-heading-trigger {
+      min-width: 44px;
+      gap: 2px;
+      padding: 0 4px;
+    }
+
+    .editor-toolbar-heading-label {
+      font-size: 12px;
+    }
+
+    .editor-toolbar-heading-label-full {
+      display: none;
+    }
+
+    .editor-toolbar-heading-label-compact {
+      display: inline;
+    }
+
+    .editor-toolbar-more-menu .editor-toolbar-more-link {
+      display: flex;
+    }
+
+    .editor-toolbar-list-trigger {
+      padding: 0 1px;
+    }
+
+    .editor-toolbar-insert-trigger {
+      gap: 2px;
+      padding: 0 3px;
+    }
+
+    .editor-toolbar-insert-label,
+    .editor-toolbar-insert-trigger .editor-toolbar-chevron {
+      display: none;
+    }
+
+    .editor-toolbar-components-trigger {
+      flex-shrink: 1;
+      width: auto;
+      min-width: 0;
+      gap: 3px;
+      padding: 0 6px 0 5px;
+      font-size: 11px;
+    }
+
+    .editor-toolbar-components-trigger .editor-toolbar-icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    .editor-toolbar-components-icon-full {
+      display: none;
+    }
+
+    .editor-toolbar-components-icon-compact {
+      display: block;
+    }
+
+    .editor-toolbar-components-label-full {
+      display: none;
+    }
+
+    .editor-toolbar-components-label-compact {
+      display: inline;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .editor-toolbar-history {
+      gap: 0;
+    }
+
+    .editor-toolbar-heading-menu {
+      width: min(200px, calc(100vw - 24px));
+    }
+
+    .editor-toolbar-list-menu {
+      width: min(208px, calc(100vw - 48px));
+    }
+
+    .editor-toolbar-insert-menu {
+      right: 0;
+      left: auto;
+      width: min(216px, calc(100vw - 24px));
+      transform-origin: bottom right;
+    }
+
+    .editor-toolbar-more-menu {
+      width: min(188px, calc(100vw - 24px));
+      transform-origin: bottom right;
+    }
+
+    .editor-toolbar-heading-menu,
+    .editor-toolbar-list-menu,
+    .editor-toolbar-insert-menu,
+    .editor-toolbar-more-menu {
+      position: fixed;
+      top: auto;
+      bottom: calc(100% + 6px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      animation-name: editor-toolbar-pop-up;
+    }
+
+    .editor-toolbar-heading-menu,
+    .editor-toolbar-list-menu {
+      transform-origin: bottom left;
+    }
+
+    .editor-toolbar-emoji-menu {
+      position: fixed;
+      top: auto;
+      right: 8px;
+      bottom: 12px;
+      left: 8px;
+      z-index: 80;
+      width: auto;
+      max-width: 380px;
+      margin: 0 auto;
+      overflow-x: auto;
+      overscroll-behavior: contain;
+      transform-origin: bottom center;
+    }
+
+    .editor-toolbar-native-menu {
+      position: fixed;
+      top: auto;
+      right: 10px;
+      bottom: 10px;
+      left: 10px;
+      z-index: 80;
+      width: auto;
+      max-height: min(68vh, 460px);
+      transform-origin: bottom center;
+    }
+
+    .editor-toolbar-native-scroll {
+      max-height: none;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .editor-toolbar-heading-trigger {
+      padding: 0 2px;
+    }
+
+    .editor-toolbar-insert-trigger {
+      padding: 0 1px;
+    }
+
+    .editor-toolbar-components-trigger {
+      gap: 1px;
+      padding: 0 3px;
+      font-size: 10.5px;
+    }
+
+    .editor-toolbar-components-trigger .editor-toolbar-icon {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  /* Keep the compact mobile row independent of the primary pointer. */
+
+  @media (pointer: coarse) and (min-width: 641px) {
+    .editor-toolbar-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+    }
+
+    .editor-toolbar-heading-trigger,
+    .editor-toolbar-list-trigger,
+    .editor-toolbar-insert-trigger,
+    .editor-toolbar-components-trigger {
+      width: auto;
+      min-height: 44px;
+    }
+
+    .editor-toolbar-heading-trigger,
+    .editor-toolbar-list-trigger {
+      min-width: 44px;
+    }
+  }
+
+  /* Touch targets inside menus retain their larger hit areas. */
+
+  @media (pointer: coarse) {
+    .editor-toolbar-menu-item,
+    .editor-toolbar-native-item {
+      min-height: 44px;
+    }
+
+    .editor-toolbar-search {
+      min-height: 44px;
+    }
+
+    .editor-toolbar-emoji-menu {
+      width: auto;
+      padding: 6px;
+    }
+
+    .editor-toolbar-emoji-grid {
+      grid-template-columns: repeat(8, 44px);
+      gap: 1px;
+      justify-content: center;
+    }
+
+    .editor-toolbar-emoji {
+      width: 44px;
+      height: 44px;
+    }
+
+    .editor-toolbar-close {
+      width: 44px;
+      height: 44px;
+    }
+
+    .editor-toolbar-close .editor-toolbar-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .editor-toolbar-native-item {
+      padding: 8px;
+    }
+  }
+
+  @container editor-frame (max-width: 760px) {
+    .editor-status-bar {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+    }
+
+    .editor-status-hint { display: none; }
+    .editor-view-modes button { padding-inline: 10px; }
+  }
+
+  @container editor-frame (max-width: 600px) {
+    .editor-view-modes button[data-editor-view-option="split"] { display: none; }
+    .editor-view-modes button { padding-inline: 12px; }
+  }
+
+  @media (max-width: 640px) {
+    .authoring-bar,
+    .authoring-body {
+      padding: var(--space-2);
+    }
+
+    .authoring-button,
+    .authoring-binding-chip,
+    .authoring-location,
+    .authoring-rename-input,
+    .authoring-completion-item {
+      min-height: var(--control-height-lg);
+    }
+
+    .authoring-rename-input {
+      flex-basis: 100%;
+    }
+
+    .authoring-completion-list {
+      max-height: 180px;
+    }
+  }
+}
+
+/* An editor paired with a MobileDocBar repeats the switch in that bar, so its
+   own footer count and switch step aside on phones. `data-mobile-bar` lives on
+   that editor instance only; other editors on the page keep their footer. */
+
+@media (max-width: 620px) {
+  .reactive-md-editor[data-mobile-bar] .editor-status-bar {
+    display: none;
+  }
+
+  .reactive-md-editor[data-mobile-bar] .editor-workspace {
+    border-radius: 0 0 calc(var(--radius-card, 12px) - 1px) calc(var(--radius-card, 12px) - 1px);
+  }
+}
+
+/* Split collapse ----------------------------------------------------- */
+
+@container editor-frame (max-width: 600px) {
+  .reactive-md-editor .editor-workspace[data-view="split"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reactive-md-editor .editor-workspace[data-view="split"] > .editor-preview {
+    display: none;
+  }
+}

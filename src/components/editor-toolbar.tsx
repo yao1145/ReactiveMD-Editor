@@ -11,7 +11,6 @@ import {
   useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -57,6 +56,7 @@ import {
 import { localCompileOptionsKey } from 'reactive-md';
 import { useEditorLocale } from '../localization/locale';
 import { EDITOR_TOOLBAR_COPY } from '../localization/editor-i18n';
+import { useCompactMenuPlacement } from '../mobile/use-compact-menu-placement';
 import type { EditorLocale } from '../contracts/types';
 import {type EditorSurface} from '../contracts/surface';
 
@@ -168,13 +168,6 @@ const INSERT_ITEMS: readonly InsertItem[] = [
   { labelKey: 'strikethrough', icon: 'strike', command: formatStrike },
   { labelKey: 'quote', icon: 'quote', command: formatQuote },
 ];
-
-const MOBILE_MENU_WIDTHS: Partial<Record<MenuId, number>> = {
-  heading: 200,
-  list: 208,
-  insert: 216,
-  more: 188,
-};
 
 const INITIAL_FORMAT_STATE: EditorFormatState = {
   headingLevel: 0,
@@ -651,59 +644,12 @@ export function EditorToolbar({
     return rootRef.current?.querySelector<HTMLButtonElement>(`[data-toolbar-id="${id}"]`) ?? null;
   }, []);
 
-  useLayoutEffect(() => {
-    if (!openMenu || openMenu === 'native' || openMenu === 'emoji') {
-      setMenuPlacement(null);
-      return;
-    }
-
-    const media = window.matchMedia('(max-width: 640px)');
-    const update = () => {
-      if (!media.matches) {
-        setMenuPlacement(null);
-        return;
-      }
-      const trigger = getMenuTrigger(openMenu);
-      if (!trigger) return;
-      const rect = trigger.getBoundingClientRect();
-      const width = MOBILE_MENU_WIDTHS[openMenu] ?? 216;
-      const gutter = 8;
-      const gap = 6;
-      const spaceAbove = rect.top - gap - gutter;
-      const spaceBelow = window.innerHeight - rect.bottom - gap - gutter;
-      const style: CSSProperties = {};
-      if (spaceAbove >= spaceBelow) {
-        style.bottom = window.innerHeight - rect.top + gap;
-        style.top = 'auto';
-        style.maxHeight = Math.max(80, spaceAbove);
-      } else {
-        style.top = rect.bottom + gap;
-        style.bottom = 'auto';
-        style.maxHeight = Math.max(80, spaceBelow);
-      }
-      if (openMenu === 'heading' || openMenu === 'list') {
-        style.left = Math.min(Math.max(gutter, rect.left), window.innerWidth - gutter - width);
-        style.right = 'auto';
-      } else {
-        style.right = Math.min(
-          Math.max(gutter, window.innerWidth - rect.right),
-          window.innerWidth - gutter - width,
-        );
-        style.left = 'auto';
-      }
-      setMenuPlacement(style);
-    };
-
-    update();
-    media.addEventListener('change', update);
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
-    return () => {
-      media.removeEventListener('change', update);
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update, true);
-    };
-  }, [openMenu, getMenuTrigger]);
+  useCompactMenuPlacement({
+    menu: openMenu,
+    enabled: Boolean(openMenu && openMenu !== 'native' && openMenu !== 'emoji'),
+    getTrigger: getMenuTrigger,
+    setPlacement: setMenuPlacement,
+  });
 
   useEffect(() => {
     if (!openMenu) return;
