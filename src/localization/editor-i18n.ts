@@ -43,7 +43,6 @@ export interface EditorToolbarCopy {
   insertEmojiLabel(emoji: string): string;
   componentsTriggerLabel: string;
   componentsLabel: string;
-  componentsCompactLabel: string;
   nativeMenuLabel: string;
   nativeTitle: string;
   closeNativeLabel: string;
@@ -56,8 +55,6 @@ export interface EditorToolbarCopy {
   undo: string;
   redo: string;
   download: string;
-  more: string;
-  moreMenuLabel: string;
 }
 
 export interface EditorChromeCopy {
@@ -134,7 +131,6 @@ export const EDITOR_TOOLBAR_COPY: Record<EditorLocale, EditorToolbarCopy> = {
     insertEmojiLabel: (emoji) => `Insert emoji ${emoji}`,
     componentsTriggerLabel: 'Insert native component',
     componentsLabel: 'Components',
-    componentsCompactLabel: 'Component',
     nativeMenuLabel: 'Insert native component',
     nativeTitle: 'Insert component',
     closeNativeLabel: 'Close component panel',
@@ -147,8 +143,6 @@ export const EDITOR_TOOLBAR_COPY: Record<EditorLocale, EditorToolbarCopy> = {
     undo: 'Undo',
     redo: 'Redo',
     download: 'Export',
-    more: 'More',
-    moreMenuLabel: 'More actions',
   },
   zh: {
     toolbarLabel: '文档编辑工具栏',
@@ -185,7 +179,6 @@ export const EDITOR_TOOLBAR_COPY: Record<EditorLocale, EditorToolbarCopy> = {
     insertEmojiLabel: (emoji) => `插入表情 ${emoji}`,
     componentsTriggerLabel: '插入原生组件',
     componentsLabel: '插入组件',
-    componentsCompactLabel: '组件',
     nativeMenuLabel: '插入原生组件',
     nativeTitle: '插入组件',
     closeNativeLabel: '关闭组件面板',
@@ -198,7 +191,5 @@ export const EDITOR_TOOLBAR_COPY: Record<EditorLocale, EditorToolbarCopy> = {
     undo: '撤销',
     redo: '重做',
     download: '导出',
-    more: '更多',
-    moreMenuLabel: '更多操作',
   },
 };

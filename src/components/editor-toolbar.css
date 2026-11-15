@@ -1,5 +1,10 @@
-/* Flush source editor toolbar. Nested under .reactive-md-editor so no rule
-   can reach host buttons, inputs or page layout. */
+/* Flush source editor toolbar. Desktop styling only. Nested under
+   `.reactive-md-editor` so no rule can reach host buttons, inputs or page
+   layout.
+
+   Every compact, mobile-only and touch rule lives in
+   `src/mobile/toolbar-compact.css`, which loads after this file. The only
+   media queries kept here are desktop hover tooltips and reduced motion. */
 
 .reactive-md-editor {
   .editor-toolbar {
@@ -69,10 +74,6 @@
     margin-left: 4px;
   }
 
-  .editor-toolbar-mobile-only {
-    display: none;
-  }
-
   .editor-toolbar-button {
     position: relative;
     display: inline-flex;
@@ -90,8 +91,6 @@
     color: var(--editor-toolbar-ink);
     font: inherit;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
     transition:
       background-color 0.15s ease,
       color 0.15s ease,
@@ -170,10 +169,6 @@
     white-space: nowrap;
   }
 
-  .editor-toolbar-heading-label-compact {
-    display: none;
-  }
-
   .editor-toolbar-list-trigger {
     width: auto;
     gap: 0;
@@ -226,16 +221,8 @@
     color: var(--editor-toolbar-accent);
   }
 
-  .editor-toolbar-components-icon-compact {
-    display: none;
-  }
-
   .editor-toolbar-components-label {
     white-space: nowrap;
-  }
-
-  .editor-toolbar-components-label-compact {
-    display: none;
   }
 
   .editor-toolbar-components-trigger[aria-expanded="true"] {
@@ -343,23 +330,6 @@
     padding: 6px;
   }
 
-  .editor-toolbar-more-menu {
-    right: 0;
-    left: auto;
-    width: min(188px, calc(100vw - 24px));
-    padding: 6px;
-    transform-origin: top right;
-  }
-
-  .editor-toolbar-more-status {
-    display: flex;
-    align-items: center;
-    min-height: 32px;
-    margin: -2px -2px 4px;
-    padding: 2px 6px 6px;
-    border-bottom: 1px solid var(--line);
-  }
-
   /* Menu items --------------------------------------------------------- */
 
   .editor-toolbar-menu-item {
@@ -422,8 +392,7 @@
   }
 
   .editor-toolbar-list-item,
-  .editor-toolbar-insert-item,
-  .editor-toolbar-more-item {
+  .editor-toolbar-insert-item {
     gap: 9px;
   }
 
@@ -503,7 +472,6 @@
     font-size: 17px;
     line-height: 1;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
     transition: background-color 0.12s ease, transform 0.1s ease;
   }
 

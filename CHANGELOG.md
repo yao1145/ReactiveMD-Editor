@@ -2,6 +2,36 @@
 
 **English** · [中文](CHANGELOG-ch.md)
 
+## Unreleased
+
+### Changed
+
+- Moved every mobile-only feature into `src/mobile/`: toolbar chrome, copy,
+  breakpoints, the mobile bar marker and the `mobileBar` prop now sit in one
+  layer.
+- The shared toolbar in `src/components/` renders the desktop control set and
+  takes narrow-screen chrome from the mobile layer as an optional
+  `CompactToolbarChrome`; it imports nothing from `mobile/`.
+- Moved the `mobileBar` prop out of the shared props interface into the
+  mobile-only props interface. The CodeMirror shell still accepts it.
+- Collapsed the narrow-screen thresholds into one primary value. A 760px
+  editor frame drives the compact toolbar, split collapse, gutter and status
+  bar; host-facing chrome such as `MobileDocBar` uses the same number on the
+  viewport. 400px remains a density tier and pointer queries cover touch at any
+  width. Previously the toolbar switched at 640, split and gutter at 600 and
+  the mobile bar at 620, which left a dead zone and made the full toolbar wrap
+  onto two rows around a 700px viewport.
+- Added `src/mobile/breakpoints.ts` as the single JavaScript source for the
+  760px frame threshold, the 760px viewport query and the 400px density tier.
+- Removed the standalone Link toolbar button. Link is available in the Insert
+  menu only, so the toolbar no longer repeats it.
+- Base component stylesheets carry no mobile hooks. `mobile/mobile.css` and
+  `mobile/toolbar-compact.css` load after `styles/editor.css`.
+- Grouped mobile tests under `tests/mobile/` and added architecture guards for
+  the mobile boundary and the shared thresholds.
+
+Public API and package entries are unchanged.
+
 ## 0.1.0 (2026-11-12)
 
 Initial independent editor release, paired with `reactive-md@0.8.0`.

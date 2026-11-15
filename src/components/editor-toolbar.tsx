@@ -5,6 +5,10 @@
  * back to the editor. The editor owns history, focus restoration and the
  * controlled value. Format state is derived from the current selection so the
  * toolbar reflects the block and inline formatting under the caret.
+ *
+ * The toolbar is width-agnostic: it renders the full desktop control set and
+ * accepts an optional `CompactToolbarChrome` from the mobile layer for the
+ * narrow-frame triggers and overflow menu. `codemirror/` supplies it.
  */
 
 import {
@@ -16,7 +20,6 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
-  type MouseEvent as ReactMouseEvent,
   type ReactElement,
   type ReactNode,
 } from 'react';
@@ -56,9 +59,10 @@ import {
 import { localCompileOptionsKey } from 'reactive-md';
 import { useEditorLocale } from '../localization/locale';
 import { EDITOR_TOOLBAR_COPY } from '../localization/editor-i18n';
-import { useCompactMenuPlacement } from '../mobile/use-compact-menu-placement';
 import type { EditorLocale } from '../contracts/types';
 import {type EditorSurface} from '../contracts/surface';
+import {Icon,ToolbarButton,getMenuItems,moveMenuFocus,keepEditorFocus,type IconName,type MenuEdge} from './toolbar-parts';
+import type {CompactToolbarChrome} from './toolbar-compact';
 
 export interface EditorToolbarProps {
   editorSurface: EditorSurface;
@@ -78,42 +82,18 @@ export interface EditorToolbarProps {
   leading?: ReactNode;
   /** Host content immediately before the history controls. */
   status?: ReactNode;
+  /** Narrow-screen triggers and overflow supplied by the mobile layer. */
+  compact?: CompactToolbarChrome;
 }
 
 type TextSelection = { start: number; end: number };
 type MenuId = 'emoji' | 'heading' | 'insert' | 'list' | 'more' | 'native';
-type MenuEdge = 'first' | 'last';
 type HeadingLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 type SimpleCommand = (
   value: string,
   selection: TextSelection,
   locale?: EditorLocale,
 ) => EditorEdit;
-type IconName =
-  | 'smile'
-  | 'link'
-  | 'bulletList'
-  | 'orderedList'
-  | 'taskList'
-  | 'outdent'
-  | 'indent'
-  | 'quote'
-  | 'divider'
-  | 'codeBlock'
-  | 'inlineCode'
-  | 'strike'
-  | 'image'
-  | 'table'
-  | 'undo'
-  | 'redo'
-  | 'download'
-  | 'chevron'
-  | 'sparkle'
-  | 'search'
-  | 'plus'
-  | 'more'
-  | 'close';
-
 const EMOJIS = [
   '😀', '😄', '😁', '😊', '🙂', '😉', '😍', '🤔',
   '😎', '😅', '😂', '🥳', '👍', '👎', '👏', '🙏',
@@ -180,254 +160,6 @@ const INITIAL_FORMAT_STATE: EditorFormatState = {
   quote: false,
 };
 
-const ICONS: Record<IconName, ReactNode> = {
-  smile: (
-    <>
-      <circle cx="12" cy="12" r="8.4" />
-      <path d="M8.6 14.1c.9 1.4 2 2.1 3.4 2.1s2.5-.7 3.4-2.1" />
-      <path d="M9.2 9.7h.01M14.8 9.7h.01" />
-    </>
-  ),
-  link: (
-    <>
-      <path d="M10.1 13.9a3.8 3.8 0 0 0 5.4 0l2.4-2.4a3.8 3.8 0 0 0-5.4-5.4l-1.2 1.2" />
-      <path d="M13.9 10.1a3.8 3.8 0 0 0-5.4 0l-2.4 2.4a3.8 3.8 0 0 0 5.4 5.4l1.2-1.2" />
-    </>
-  ),
-  bulletList: (
-    <>
-      <path d="M9.5 6.5H20M9.5 12H20M9.5 17.5H20" />
-      <path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" />
-    </>
-  ),
-  orderedList: (
-    <>
-      <path d="M10.5 6.5H20M10.5 12H20M10.5 17.5H20" />
-      <text
-        x="2.9"
-        y="8.6"
-        fill="currentColor"
-        stroke="none"
-        fontSize="6.8"
-        fontWeight="650"
-        fontFamily="ui-sans-serif, system-ui, sans-serif"
-      >
-        1
-      </text>
-      <text
-        x="2.9"
-        y="14.1"
-        fill="currentColor"
-        stroke="none"
-        fontSize="6.8"
-        fontWeight="650"
-        fontFamily="ui-sans-serif, system-ui, sans-serif"
-      >
-        2
-      </text>
-      <text
-        x="2.9"
-        y="19.6"
-        fill="currentColor"
-        stroke="none"
-        fontSize="6.8"
-        fontWeight="650"
-        fontFamily="ui-sans-serif, system-ui, sans-serif"
-      >
-        3
-      </text>
-    </>
-  ),
-  taskList: (
-    <>
-      <rect x="3" y="4" width="5.6" height="5.6" rx="1.2" />
-      <path d="M4.5 6.8l1 1 1.6-1.9" />
-      <path d="M12 6.8h8.4" />
-      <path d="M3.4 13.9h5M3.4 17.4h5" opacity=".55" />
-      <path d="M12 13.9h8.4M12 17.4h8.4" opacity=".55" />
-    </>
-  ),
-  outdent: (
-    <>
-      <path d="M10 6.5H20M10 12H20M10 17.5H20" />
-      <path d="M7.2 9l-3.4 3 3.4 3M4.2 12h7" />
-    </>
-  ),
-  indent: (
-    <>
-      <path d="M10 6.5H20M10 12H20M10 17.5H20" />
-      <path d="M3.8 9l3.4 3-3.4 3M3.2 12h7" />
-    </>
-  ),
-  quote: (
-    <>
-      <path d="M10 8.2c-2.4.7-3.8 2.4-3.8 5.2V17H10v-4.2H7.5c0-1.5.7-2.6 2.5-3.2z" />
-      <path d="M18.5 8.2c-2.4.7-3.8 2.4-3.8 5.2V17h3.8v-4.2h-2.5c0-1.5.7-2.6 2.5-3.2z" />
-    </>
-  ),
-  divider: (
-    <>
-      <path d="M4 12h16" />
-      <path d="M7 7.5h10M7 16.5h10" opacity=".55" />
-    </>
-  ),
-  codeBlock: (
-    <>
-      <rect x="3" y="4.5" width="18" height="15" rx="2.4" />
-      <path d="M9.8 9.3l-2.7 2.7 2.7 2.7M14.2 9.3l2.7 2.7-2.7 2.7" />
-    </>
-  ),
-  inlineCode: (
-    <>
-      <path d="M8.8 8.5L5 12l3.8 3.5M15.2 8.5L19 12l-3.8 3.5" />
-      <path d="M13.6 6.5l-3.2 11" opacity=".45" />
-    </>
-  ),
-  strike: (
-    <>
-      <path d="M4 12h16" />
-      <path d="M16.7 7.4c-.7-1.2-2-1.9-3.7-1.9-2.3 0-3.9 1.1-3.9 2.8 0 1.5 1.1 2.3 3.7 3 2.8.8 4.2 1.7 4.2 3.5 0 2-1.7 3.2-4.3 3.2-2.1 0-3.6-.8-4.3-2.2" />
-    </>
-  ),
-  image: (
-    <>
-      <rect x="3" y="4.5" width="18" height="15" rx="2.4" />
-      <circle cx="8.4" cy="9.4" r="1.35" />
-      <path d="M4.6 17.4l4.9-4.9 3.5 3.5 2.7-2.7 3.7 3.7" />
-    </>
-  ),
-  table: (
-    <>
-      <rect x="3" y="4.5" width="18" height="15" rx="2.4" />
-      <path d="M3.4 9.7h17.2M9.7 9.2v10.2M14.9 9.2v10.2M9.2 14.5h11.4" />
-    </>
-  ),
-  undo: (
-    <>
-      <path d="M5 12h9.2a4.3 4.3 0 0 1 0 8.6h-1.8" />
-      <path d="M8.8 8.2L5 12l3.8 3.8" />
-    </>
-  ),
-  redo: (
-    <>
-      <path d="M19 12h-9.2a4.3 4.3 0 0 0 0 8.6h1.8" />
-      <path d="M15.2 8.2L19 12l-3.8 3.8" />
-    </>
-  ),
-  download: (
-    <>
-      <path d="M12 4v10.5M8 10.8l4 3.7 4-3.7" />
-      <path d="M4.5 17.5v2h15v-2" />
-    </>
-  ),
-  chevron: <path d="M7.5 9.7l4.5 4.5 4.5-4.5" />,
-  sparkle: (
-    <>
-      <path d="M11.2 4.2l1.5 4.3 4.3 1.5-4.3 1.5-1.5 4.3-1.5-4.3-4.3-1.5 4.3-1.5z" />
-      <path d="M18.3 15.4v3.4M16.6 17.1h3.4" />
-    </>
-  ),
-  search: (
-    <>
-      <circle cx="10.6" cy="10.6" r="5.6" />
-      <path d="M14.8 14.8L20 20" />
-    </>
-  ),
-  plus: <path d="M12 5.2v13.6M5.2 12h13.6" />,
-  more: (
-    <>
-      <circle cx="5.5" cy="12" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="18.5" cy="12" r="1.1" fill="currentColor" stroke="none" />
-    </>
-  ),
-  close: <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />,
-};
-
-function Icon({ name, className }: { name: IconName; className?: string }) {
-  return (
-    <svg
-      className={className ? `editor-toolbar-icon ${className}` : 'editor-toolbar-icon'}
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      {ICONS[name]}
-    </svg>
-  );
-}
-
-function keepEditorFocus(event: ReactMouseEvent<HTMLButtonElement>): void {
-  event.preventDefault();
-}
-
-interface ToolbarButtonProps {
-  toolbarId: string;
-  label: string;
-  tabStop: boolean;
-  onFocus(): void;
-  onClick(): void;
-  children: ReactNode;
-  className?: string;
-  disabled?: boolean;
-  expanded?: boolean;
-  popup?: 'menu' | 'dialog';
-  controls?: string;
-  pressed?: boolean;
-  active?: boolean;
-  onKeyDown?(event: ReactKeyboardEvent<HTMLButtonElement>): void;
-}
-
-function ToolbarButton({
-  toolbarId,
-  label,
-  tabStop,
-  onFocus,
-  onClick,
-  children,
-  className,
-  disabled,
-  expanded,
-  popup,
-  controls,
-  pressed,
-  active,
-  onKeyDown,
-}: ToolbarButtonProps) {
-  return (
-    <button
-      type="button"
-      data-toolbar-item="true"
-      data-toolbar-id={toolbarId}
-      data-tooltip={label}
-      className={
-        `editor-toolbar-button${className ? ` ${className}` : ''}` +
-        (active ? ' is-active' : '')
-      }
-      aria-label={label}
-      aria-pressed={pressed}
-      aria-expanded={expanded}
-      aria-haspopup={popup}
-      aria-controls={controls}
-      disabled={disabled}
-      tabIndex={tabStop ? 0 : -1}
-      onFocus={onFocus}
-      onMouseDown={popup ? undefined : keepEditorFocus}
-      onClick={onClick}
-      onKeyDown={onKeyDown}
-    >
-      {children}
-    </button>
-  );
-}
-
 function readEditor(surface: EditorSurface) {
   const {value,selection}=surface.read();
   return {value,selection,selectedText:value.slice(selection.start,selection.end)};
@@ -450,46 +182,6 @@ function getToolbarButtons(container: HTMLElement | null): HTMLButtonElement[] {
   return Array.from(
     container.querySelectorAll<HTMLButtonElement>('[data-toolbar-item]'),
   ).filter((button) => !button.disabled && button.getClientRects().length > 0);
-}
-
-function getMenuItems(container: HTMLElement | null): HTMLButtonElement[] {
-  if (!container) return [];
-  return Array.from(
-    container.querySelectorAll<HTMLButtonElement>(
-      '[role="menuitem"], [role="menuitemradio"]',
-    ),
-  ).filter((item) => !item.disabled && item.getClientRects().length > 0);
-}
-
-function moveMenuFocus(
-  event: ReactKeyboardEvent<HTMLElement>,
-  container: HTMLElement | null,
-): void {
-  const items = getMenuItems(container);
-  if (items.length === 0) return;
-  const active = document.activeElement as HTMLButtonElement | null;
-  const index = active ? items.indexOf(active) : -1;
-  let next = index;
-
-  switch (event.key) {
-    case 'ArrowDown':
-      next = index < 0 ? 0 : (index + 1) % items.length;
-      break;
-    case 'ArrowUp':
-      next = index < 0 ? items.length - 1 : (index - 1 + items.length) % items.length;
-      break;
-    case 'Home':
-      next = 0;
-      break;
-    case 'End':
-      next = items.length - 1;
-      break;
-    default:
-      return;
-  }
-
-  event.preventDefault();
-  items[next]?.focus();
 }
 
 function moveEmojiFocus(
@@ -545,6 +237,7 @@ export function EditorToolbar({
   compileOptions,
   leading,
   status,
+  compact,
 }: EditorToolbarProps): ReactElement {
   const inputSurface=editorSurface;
   const rootRef = useRef<HTMLDivElement>(null);
@@ -645,12 +338,17 @@ export function EditorToolbar({
     return rootRef.current?.querySelector<HTMLButtonElement>(`[data-toolbar-id="${id}"]`) ?? null;
   }, []);
 
-  useCompactMenuPlacement({
-    menu: openMenu,
-    enabled: Boolean(openMenu && openMenu !== 'native' && openMenu !== 'emoji'),
-    getTrigger: getMenuTrigger,
-    setPlacement: setMenuPlacement,
-  });
+  // Placement belongs to the mobile layer; without it the stylesheet position
+  // applies. The effect still runs unconditionally so hook order is stable.
+  const measureMenu = compact?.trackMenuPlacement;
+  useEffect(() => {
+    if (!measureMenu) {
+      setMenuPlacement(null);
+      return;
+    }
+    const menu = openMenu && openMenu !== 'native' && openMenu !== 'emoji' ? openMenu : null;
+    return measureMenu(menu, menu ? getMenuTrigger(menu) : null, setMenuPlacement);
+  }, [openMenu, measureMenu, getMenuTrigger]);
 
   useEffect(() => {
     if (!openMenu) return;
@@ -848,7 +546,10 @@ export function EditorToolbar({
   const headingLabel =
     headingItems.find((item) => item.level === formatState.headingLevel)?.label ??
     copy.headingLabels[0];
-  const headingCompactLabel = formatState.headingLevel === 0 ? '¶' : `H${formatState.headingLevel}`;
+  const headingContent =
+    compact?.headingContent(headingLabel, formatState.headingLevel) ?? (
+      <span className="editor-toolbar-heading-label">{headingLabel}</span>
+    );
   const headingLabelText = copy.headingLevelLabel(headingLabel);
   const currentListLabel = formatState.list ? copy.listLabels[formatState.list] : null;
   const listLabel = currentListLabel ? copy.listLabelWithType(currentListLabel) : copy.listLabel;
@@ -885,15 +586,7 @@ export function EditorToolbar({
           onClick={() => toggleMenu('heading')}
           onKeyDown={(event) => handleTriggerKeyDown('heading', event)}
         >
-          <span className="editor-toolbar-heading-label editor-toolbar-heading-label-full">
-            {headingLabel}
-          </span>
-          <span
-            className="editor-toolbar-heading-label editor-toolbar-heading-label-compact"
-            aria-hidden="true"
-          >
-            {headingCompactLabel}
-          </span>
+          {headingContent}
           <Icon name="chevron" className="editor-toolbar-chevron" />
         </ToolbarButton>
         {openMenu === 'heading' ? (
@@ -1017,18 +710,6 @@ export function EditorToolbar({
         ) : null}
       </div>
 
-      <ToolbarButton
-        toolbarId="link"
-        label={copy.insertLink}
-        className="editor-toolbar-desktop-only"
-        tabStop={tabStopId === 'link'}
-        onFocus={() => setTabStopId('link')}
-        disabled={disabled}
-        onClick={() => applySimple(insertLink)}
-      >
-        <Icon name="link" />
-      </ToolbarButton>
-
       <div className="editor-toolbar-slot">
         <ToolbarButton
           toolbarId="insert"
@@ -1127,10 +808,12 @@ export function EditorToolbar({
           onClick={() => toggleMenu('native')}
           onKeyDown={(event) => handleTriggerKeyDown('native', event)}
         >
-          <Icon name="sparkle" className="editor-toolbar-components-icon-full" />
-          <Icon name="sparkle" className="editor-toolbar-components-icon-compact" />
-          <span className="editor-toolbar-components-label editor-toolbar-components-label-full">{copy.componentsLabel}</span>
-          <span className="editor-toolbar-components-label editor-toolbar-components-label-compact">{copy.componentsCompactLabel}</span>
+          {compact?.componentsContent() ?? (
+            <>
+              <Icon name="sparkle" />
+              <span className="editor-toolbar-components-label">{copy.componentsLabel}</span>
+            </>
+          )}
         </ToolbarButton>
         {openMenu === 'native' ? (
           <div
@@ -1223,7 +906,6 @@ export function EditorToolbar({
         <ToolbarButton
           toolbarId="undo"
           label={copy.undo}
-          className="editor-toolbar-desktop-only"
           tabStop={tabStopId === 'undo'}
           onFocus={() => setTabStopId('undo')}
           disabled={disabled || !canUndo}
@@ -1234,7 +916,6 @@ export function EditorToolbar({
         <ToolbarButton
           toolbarId="redo"
           label={copy.redo}
-          className="editor-toolbar-desktop-only"
           tabStop={tabStopId === 'redo'}
           onFocus={() => setTabStopId('redo')}
           disabled={disabled || !canRedo}
@@ -1246,7 +927,6 @@ export function EditorToolbar({
           <ToolbarButton
             toolbarId="download"
             label={copy.download}
-            className="editor-toolbar-desktop-only"
             tabStop={tabStopId === 'download'}
             onFocus={() => setTabStopId('download')}
             disabled={disabled}
@@ -1256,73 +936,24 @@ export function EditorToolbar({
           </ToolbarButton>
         ) : null}
 
-        <div className="editor-toolbar-slot editor-toolbar-mobile-only">
-          <ToolbarButton
-            toolbarId="more"
-            label={copy.more}
-            className="editor-toolbar-more-trigger"
-            tabStop={tabStopId === 'more'}
-            onFocus={() => setTabStopId('more')}
-            disabled={disabled}
-            popup="menu"
-            expanded={openMenu === 'more'}
-            controls={moreMenuId}
-            onClick={() => toggleMenu('more')}
-            onKeyDown={(event) => handleTriggerKeyDown('more', event)}
-          >
-            <Icon name="more" />
-          </ToolbarButton>
-          {openMenu === 'more' ? (
-            <div
-              id={moreMenuId}
-              ref={menuPanelRef}
-              className="editor-toolbar-popover editor-toolbar-more-menu"
-              role="menu"
-              aria-label={copy.moreMenuLabel}
-              style={menuPlacement ?? undefined}
-              onKeyDown={(event) => moveMenuFocus(event, menuPanelRef.current)}
-            >
-              {status ? <div className="editor-toolbar-more-status">{status}</div> : null}
-              <button
-                type="button"
-                role="menuitem"
-                tabIndex={-1}
-                className="editor-toolbar-menu-item editor-toolbar-more-item"
-                disabled={!canUndo}
-                onMouseDown={keepEditorFocus}
-                onClick={handleUndo}
-              >
-                <Icon name="undo" className="editor-toolbar-menu-icon" />
-                <span>{copy.undo}</span>
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                tabIndex={-1}
-                className="editor-toolbar-menu-item editor-toolbar-more-item"
-                disabled={!canRedo}
-                onMouseDown={keepEditorFocus}
-                onClick={handleRedo}
-              >
-                <Icon name="redo" className="editor-toolbar-menu-icon" />
-                <span>{copy.redo}</span>
-              </button>
-              {showExport ? (
-                <button
-                  type="button"
-                  role="menuitem"
-                  tabIndex={-1}
-                  className="editor-toolbar-menu-item editor-toolbar-more-item"
-                  onMouseDown={keepEditorFocus}
-                  onClick={handleExport}
-                >
-                  <Icon name="download" className="editor-toolbar-menu-icon" />
-                  <span>{copy.download}</span>
-                </button>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
+        {compact?.overflow({
+          menuId: moreMenuId,
+          menuRef: menuPanelRef,
+          open: openMenu === 'more',
+          placement: menuPlacement,
+          tabStop: tabStopId === 'more',
+          onFocus: () => setTabStopId('more'),
+          onToggle: () => toggleMenu('more'),
+          onKeyDown: (event) => handleTriggerKeyDown('more', event),
+          disabled,
+          canUndo,
+          canRedo,
+          onUndo: handleUndo,
+          onRedo: handleRedo,
+          showExport,
+          onExport: handleExport,
+          status,
+        })}
       </div>
     </div>
   );

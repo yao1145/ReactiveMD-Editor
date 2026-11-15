@@ -1,0 +1,342 @@
+/* Toolbar narrow-screen rules.
+
+   Toolbar-only half of the mobile layer. Every compact toolbar metric, menu
+   placement and touch-target rule lives here; the base component stylesheet
+   (`components/editor-toolbar.css`) carries none of them. Selectors stay
+   nested under `.reactive-md-editor`, so no rule can reach host buttons.
+
+   `mobile.css` imports this file before its own rules. Both stylesheets load
+   after `styles/editor.css` (see `src/library.ts` and
+   `src/codemirror/library.ts`), so the narrow-screen overrides still win over
+   the desktop component defaults.
+
+   The toolbar switches to its compact control set at a 760px editor-frame
+   container threshold: the toolbar lives inside `.editor-frame`, so the
+   container query follows the frame exactly like the JS measurement. The
+   bottom-sheet menu placement below uses the same 760px number on the
+   viewport, because those menus are positioned against the viewport and
+   clamped by JavaScript at the viewport width. 400px viewport is a density
+   tier for very small phones, not a second layout threshold. Pointer queries
+   are not width breakpoints; they cover touch devices at any width.
+   `src/mobile/breakpoints.ts` holds 760 and 400 for JavaScript, and the
+   numbers are repeated here by hand because CSS cannot import them. */
+
+.reactive-md-editor {
+  /* Base defaults -------------------------------------------------------- */
+
+  /* Hidden on desktop. The narrow rules below reveal these nodes and swap the
+     full and compact label/icon variants. */
+
+  .editor-toolbar-mobile-only {
+    display: none;
+  }
+
+  .editor-toolbar-heading-label-compact {
+    display: none;
+  }
+
+  .editor-toolbar-components-icon-compact {
+    display: none;
+  }
+
+  .editor-toolbar-components-label-compact {
+    display: none;
+  }
+
+  /* The overflow menu belongs to the mobile chrome, so its base styling lives
+     here rather than in the desktop stylesheet. */
+
+  .editor-toolbar-more-menu {
+    right: 0;
+    left: auto;
+    width: min(188px, calc(100vw - 24px));
+    padding: 6px;
+    transform-origin: top right;
+  }
+
+  .editor-toolbar-more-status {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+    margin: -2px -2px 4px;
+    padding: 2px 6px 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .editor-toolbar-more-item {
+    gap: 9px;
+  }
+
+  /* Mobile control set ------------------------------------------------- */
+
+  @container editor-frame (max-width: 760px) {
+    .editor-toolbar {
+      flex-wrap: nowrap;
+      gap: 0;
+      padding: 4px 2px;
+    }
+
+    .editor-toolbar-button {
+      width: 28px;
+      height: 28px;
+    }
+
+    .editor-toolbar-history > [data-toolbar-id="undo"],
+    .editor-toolbar-history > [data-toolbar-id="redo"],
+    .editor-toolbar-history > [data-toolbar-id="download"] {
+      display: none !important;
+    }
+
+    .editor-toolbar-slot.editor-toolbar-mobile-only {
+      display: inline-flex;
+    }
+
+    .editor-toolbar-slot-native {
+      flex-shrink: 1;
+      min-width: 0;
+      margin-left: 1px;
+    }
+
+    .editor-toolbar-heading-trigger {
+      min-width: 44px;
+      gap: 2px;
+      padding: 0 4px;
+    }
+
+    .editor-toolbar-heading-label {
+      font-size: 12px;
+    }
+
+    .editor-toolbar-heading-label-full {
+      display: none;
+    }
+
+    .editor-toolbar-heading-label-compact {
+      display: inline;
+    }
+
+    .editor-toolbar-list-trigger {
+      padding: 0 1px;
+    }
+
+    .editor-toolbar-insert-trigger {
+      gap: 2px;
+      padding: 0 3px;
+    }
+
+    .editor-toolbar-insert-label,
+    .editor-toolbar-insert-trigger .editor-toolbar-chevron {
+      display: none;
+    }
+
+    .editor-toolbar-components-trigger {
+      flex-shrink: 1;
+      width: auto;
+      min-width: 0;
+      gap: 3px;
+      padding: 0 6px 0 5px;
+      font-size: 11px;
+    }
+
+    .editor-toolbar-components-trigger .editor-toolbar-icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    .editor-toolbar-components-icon-full {
+      display: none;
+    }
+
+    .editor-toolbar-components-icon-compact {
+      display: block;
+    }
+
+    .editor-toolbar-components-label-full {
+      display: none;
+    }
+
+    .editor-toolbar-components-label-compact {
+      display: inline;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .editor-toolbar-history {
+      gap: 0;
+    }
+  }
+
+  /* Menu placement follows the viewport, not the frame.
+
+     Control density above tracks the editor frame, so a narrow editor in a
+     wide page gets the compact row. The bottom-sheet menus, however, are
+     positioned against the viewport and clamped by JavaScript at the same
+     760px viewport width. Keeping both on the viewport threshold is what keeps
+     the stylesheet position and the measured position in agreement. */
+
+  @media (max-width: 760px) {
+    .editor-toolbar-heading-menu {
+      width: min(200px, calc(100vw - 24px));
+    }
+
+    .editor-toolbar-list-menu {
+      width: min(208px, calc(100vw - 48px));
+    }
+
+    .editor-toolbar-insert-menu {
+      right: 0;
+      left: auto;
+      width: min(216px, calc(100vw - 24px));
+      transform-origin: bottom right;
+    }
+
+    .editor-toolbar-more-menu {
+      width: min(188px, calc(100vw - 24px));
+      transform-origin: bottom right;
+    }
+
+    .editor-toolbar-heading-menu,
+    .editor-toolbar-list-menu,
+    .editor-toolbar-insert-menu,
+    .editor-toolbar-more-menu {
+      position: fixed;
+      top: auto;
+      bottom: calc(100% + 6px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      animation-name: editor-toolbar-pop-up;
+    }
+
+    .editor-toolbar-heading-menu,
+    .editor-toolbar-list-menu {
+      transform-origin: bottom left;
+    }
+
+    .editor-toolbar-emoji-menu {
+      position: fixed;
+      top: auto;
+      right: 8px;
+      bottom: 12px;
+      left: 8px;
+      z-index: 80;
+      width: auto;
+      max-width: 380px;
+      margin: 0 auto;
+      overflow-x: auto;
+      overscroll-behavior: contain;
+      transform-origin: bottom center;
+    }
+
+    .editor-toolbar-native-menu {
+      position: fixed;
+      top: auto;
+      right: 10px;
+      bottom: 10px;
+      left: 10px;
+      z-index: 80;
+      width: auto;
+      max-height: min(68vh, 460px);
+      transform-origin: bottom center;
+    }
+
+    .editor-toolbar-native-scroll {
+      max-height: none;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .editor-toolbar-heading-trigger {
+      padding: 0 2px;
+    }
+
+    .editor-toolbar-insert-trigger {
+      padding: 0 1px;
+    }
+
+    .editor-toolbar-components-trigger {
+      gap: 1px;
+      padding: 0 3px;
+      font-size: 10.5px;
+    }
+
+    .editor-toolbar-components-trigger .editor-toolbar-icon {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  /* Keep the compact mobile row independent of the primary pointer. */
+
+  @media (pointer: coarse) and (min-width: 761px) {
+    .editor-toolbar-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+    }
+
+    .editor-toolbar-heading-trigger,
+    .editor-toolbar-list-trigger,
+    .editor-toolbar-insert-trigger,
+    .editor-toolbar-components-trigger {
+      width: auto;
+      min-height: 44px;
+    }
+
+    .editor-toolbar-heading-trigger,
+    .editor-toolbar-list-trigger {
+      min-width: 44px;
+    }
+  }
+
+  /* Touch targets inside menus retain their larger hit areas. */
+
+  @media (pointer: coarse) {
+    .editor-toolbar-menu-item,
+    .editor-toolbar-native-item {
+      min-height: 44px;
+    }
+
+    .editor-toolbar-search {
+      min-height: 44px;
+    }
+
+    .editor-toolbar-emoji-menu {
+      width: auto;
+      padding: 6px;
+    }
+
+    .editor-toolbar-emoji-grid {
+      grid-template-columns: repeat(8, 44px);
+      gap: 1px;
+      justify-content: center;
+    }
+
+    .editor-toolbar-emoji {
+      width: 44px;
+      height: 44px;
+    }
+
+    .editor-toolbar-close {
+      width: 44px;
+      height: 44px;
+    }
+
+    .editor-toolbar-close .editor-toolbar-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .editor-toolbar-native-item {
+      padding: 8px;
+    }
+
+    /* Touch-specific gesture handling; the desktop metrics stay untouched. */
+
+    .editor-toolbar-button,
+    .editor-toolbar-emoji {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+  }
+}

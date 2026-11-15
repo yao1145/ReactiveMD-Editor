@@ -2,6 +2,30 @@
 
 **中文** · [English](CHANGELOG.md)
 
+## 未发布
+
+### 变更
+
+- 将所有仅移动端的功能移入 `src/mobile/`：工具栏界面、文案、断点、移动端文档栏
+  标记与 `mobileBar` prop 现在集中在同一层。
+- `src/components/` 中的共享工具栏渲染桌面控件集，并以可选的
+  `CompactToolbarChrome` 从移动层取得窄屏界面；它不引入 `mobile/` 中的任何模块。
+- 将 `mobileBar` prop 从共享 props 接口移入仅移动端的 props 接口。CodeMirror
+  外壳仍接受该 prop。
+- 将窄屏阈值收敛为一个主数值。760px 的编辑器容器驱动紧凑工具栏、分栏收起、
+  行号槽与状态栏；`MobileDocBar` 等位于编辑器之外的界面在视口上使用同一数值。
+  400px 仍作为极小屏密度档，触摸设备用 pointer 查询，与宽度无关。此前工具栏在
+  640 切换、分栏与行号槽在 600 切换、移动文档栏在 620 切换，既留下空档，也使
+  视口约 700px 时完整工具栏折成两行。
+- 新增 `src/mobile/breakpoints.ts`，作为 760px 容器阈值、760px 视口查询与
+  400px 密度档在 JavaScript 中的唯一来源。
+- 移除工具栏中独立的 Link 按钮。Link 只保留在插入菜单中，工具栏不再重复。
+- 基础组件样式表不再包含移动端钩子。`mobile/mobile.css` 与
+  `mobile/toolbar-compact.css` 在 `styles/editor.css` 之后加载。
+- 将移动端测试集中到 `tests/mobile/`，并新增移动层边界与共享阈值的架构守卫。
+
+公开 API 与包入口保持不变。
+
 ## 0.1.0（2026-11-12）
 
 首个独立编辑器发行版，与 `reactive-md@0.8.0` 配合使用。

@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MobileDocBar } from '../src/mobile/mobile-doc-bar';
+import { MobileDocBar } from '../../src/mobile/mobile-doc-bar';
 
 const labels = { edit: 'Edit', preview: 'Preview', viewSwitch: 'Editor view' };
 

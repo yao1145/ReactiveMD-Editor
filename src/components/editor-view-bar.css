@@ -1,3 +1,9 @@
+/* Per-document status bar and view switch. Desktop styling only.
+
+   Touch gesture handling and the phone-width touch targets live in
+   `src/mobile/mobile.css`, so this file carries no media query for narrow
+   screens. */
+
 .reactive-md-editor {
   .editor-status-bar {
     flex: 0 0 auto;
@@ -35,8 +41,9 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    min-height: 44px;
-    min-width: 44px;
+    /* The minimum is the shared large-control metric, not a touch rule. */
+    min-height: var(--control-height-lg);
+    min-width: var(--control-height-lg);
     padding: 0 14px;
     border: 1px solid transparent;
     border-radius: var(--radius-pill);
@@ -45,7 +52,6 @@
     font: inherit;
     white-space: nowrap;
     cursor: pointer;
-    touch-action: manipulation;
     transition: color var(--motion-fast) var(--ease-standard), background-color var(--motion-fast) var(--ease-standard);
   }
 

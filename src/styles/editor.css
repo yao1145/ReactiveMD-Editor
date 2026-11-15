@@ -1,8 +1,13 @@
-/* Standalone stylesheet for the Reactive MD source editor.
+/* Standalone stylesheet for the Reactive MD source editor. Desktop base.
 
    Every selector is scoped to `.reactive-md-editor` or its descendants so the
    package can be mounted inside any host page. The internal stylesheets use
-   native CSS nesting for the same reason. */
+   native CSS nesting for the same reason.
+
+   This file is the desktop aggregator and imports no narrow-screen rules.
+   `src/library.ts` and `src/codemirror/library.ts` load the mobile layer
+   (the `mobile/` stylesheets, whose entry also imports the compact toolbar
+   rules) after this file, so compact overrides win on the cascade. */
 
 @import '../components/editor-toolbar.css';
 @import '../authoring/source-authoring.css';

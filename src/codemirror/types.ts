@@ -1,4 +1,5 @@
 import type {ReactiveMarkdownEditorProps,EditorSelection,EditorViewMode} from '../contracts/types';
+import type {MobileEditorProps} from '../mobile/types';
 import type {AuthorAnalysis,Diagnostic,SourceRange} from 'reactive-md';
 import type {SourceChange} from './source-coordinates';
 
@@ -16,7 +17,7 @@ export interface EditorAuthorAnalysis {
   optionsKey:string;
   analysis:AuthorAnalysis;
 }
-export interface ReactiveMarkdownCodeEditorProps extends ReactiveMarkdownEditorProps {
+export interface ReactiveMarkdownCodeEditorProps extends ReactiveMarkdownEditorProps, MobileEditorProps {
   /** Undefined uses a private Worker. Null means the host's analysis is pending. */
   analysis?:EditorAuthorAnalysis|null;
   onTransaction?(transaction:EditorTransaction):void;

@@ -7,7 +7,9 @@ import {EDITOR_CHROME_COPY} from '../localization/editor-i18n';
 import {EditorLocaleProvider} from '../localization/locale';
 import {EditorToolbar} from '../components/editor-toolbar';
 import {EditorViewBar} from '../components/editor-view-bar';
-import {useNarrowEditor} from '../mobile/use-narrow-editor';
+import {useCompactView} from '../mobile/use-compact-view';
+import {useCompactToolbarChrome} from '../mobile/compact-toolbar';
+import {mobileBarAttributes} from '../mobile/mobile-bar-attributes';
 import {AuthoringPanel} from '../authoring/source-authoring';
 import {CodeEditorController,type ControllerOptions} from './controller';
 import type {EditorAuthorAnalysis,ReactiveMarkdownCodeEditorHandle,ReactiveMarkdownCodeEditorProps} from './types';
@@ -84,7 +86,6 @@ export const ReactiveMarkdownCodeEditor=forwardRef<ReactiveMarkdownCodeEditorHan
     acknowledgements.current=[];
     controller.current?.setExternal(value,reset);sourceRef.current=value;setSource(value);
   },[value,props.documentKey]);
-  const narrow=useNarrowEditor(frame);
   const privateAnalysis=authoring&&props.analysis===undefined;
   useEffect(()=>{
     if(!privateAnalysis)return;
@@ -114,23 +115,25 @@ export const ReactiveMarkdownCodeEditor=forwardRef<ReactiveMarkdownCodeEditorHan
     undo:()=>controller.current?.undo(),redo:()=>controller.current?.redo(),
   }),[]);
   const hasPreview=preview!==undefined&&preview!==null,requested=hasPreview?viewMode??internalView:'edit';
-  const currentView=narrow&&requested==='split'?'edit':requested;
+  // Narrow frames cannot show two columns, so the mobile layer withdraws split.
+  const {view:currentView,allowSplit}=useCompactView(frame,requested);
+  const compactToolbar=useCompactToolbarChrome(locale);
   useLayoutEffect(()=>{if(currentView!=='preview')controller.current?.view.requestMeasure();},[currentView]);
   const changeView=(mode:EditorViewMode)=>{if(viewMode===undefined)setInternalView(mode);props.onViewModeChange?.(mode);};
   const locked=readOnly||disabled;
   return <EditorLocaleProvider locale={locale}><div className={`reactive-md-editor rmd-cm6${props.className?` ${props.className}`:''}`}
-    data-editor-theme={theme} data-mobile-bar={mobileBar?'' : undefined} lang={locale==='zh'?'zh-CN':'en'} style={props.style} role="group" aria-label={copy.region} aria-disabled={locked||undefined} inert={disabled||undefined}>
+    data-editor-theme={theme} {...mobileBarAttributes(mobileBar)} lang={locale==='zh'?'zh-CN':'en'} style={props.style} role="group" aria-label={copy.region} aria-disabled={locked||undefined} inert={disabled||undefined}>
     <div className="editor-frame" ref={frame} data-editor-view={currentView} style={{height:cssSize(height),minHeight:cssSize(minHeight)}}>
       {toolbar?<EditorToolbar editorSurface={surface} onEdit={applyEdit} onUndo={()=>controller.current?.undo()} onRedo={()=>controller.current?.redo()}
         canUndo={status.undo} canRedo={status.redo} onExport={props.onExport} showExport={typeof props.onExport==='function'} disabled={locked}
-        compileOptions={props.compileOptions} leading={props.toolbarLeading} status={props.toolbarStatus}/>:null}
+        compileOptions={props.compileOptions} leading={props.toolbarLeading} status={props.toolbarStatus} compact={compactToolbar}/>:null}
       <div className="editor-workspace" data-view={currentView}>
         <div id={`${id}-source`} hidden={currentView==='preview'} className={`editor-shell${status.composing?' is-composing':''}`}>
           <div className="rmd-cm6-host" ref={host}/>
         </div>
         {hasPreview?<div id={`${id}-preview`} className="editor-preview" role="region" aria-label={copy.previewRegion} hidden={currentView==='edit'}>{preview}</div>:null}
       </div>
-      <EditorViewBar source={source} mode={currentView} onModeChange={changeView} sourceId={`${id}-source`} previewId={`${id}-preview`} hasPreview={hasPreview} allowSplit={!narrow} toolbar={toolbar&&!locked}/>
+      <EditorViewBar source={source} mode={currentView} onModeChange={changeView} sourceId={`${id}-source`} previewId={`${id}-preview`} hasPreview={hasPreview} allowSplit={allowSplit} toolbar={toolbar&&!locked}/>
     </div>
     {authoring?<div hidden={currentView==='preview'}><AuthoringPanel source={source} analysis={analysis} bindingDocument={props.document??null}
       compileOptions={props.compileOptions} editorSurface={surface} pageSize={50} onEdit={applyEdit} onLocate={locate} disabled={locked}/></div>:null}
