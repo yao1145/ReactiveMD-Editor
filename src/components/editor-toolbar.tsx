@@ -160,6 +160,7 @@ interface InsertItem {
 }
 
 const INSERT_ITEMS: readonly InsertItem[] = [
+  { labelKey: 'link', icon: 'link', command: insertLink },
   { labelKey: 'image', icon: 'image', command: insertImage },
   { labelKey: 'table', icon: 'table', command: insertTable },
   { labelKey: 'divider', icon: 'divider', command: insertDivider },
@@ -1282,31 +1283,6 @@ export function EditorToolbar({
               onKeyDown={(event) => moveMenuFocus(event, menuPanelRef.current)}
             >
               {status ? <div className="editor-toolbar-more-status">{status}</div> : null}
-              <button
-                type="button"
-                role="menuitem"
-                tabIndex={-1}
-                className="editor-toolbar-menu-item editor-toolbar-more-item editor-toolbar-more-link"
-                onMouseDown={keepEditorFocus}
-                onClick={() => applySimple(insertLink)}
-              >
-                <Icon name="link" className="editor-toolbar-menu-icon" />
-                <span>{copy.linkMenuItem}</span>
-              </button>
-              {insertItems.map((item) => (
-                <button
-                  key={item.labelKey}
-                  type="button"
-                  role="menuitem"
-                  tabIndex={-1}
-                  className="editor-toolbar-menu-item editor-toolbar-more-item"
-                  onMouseDown={keepEditorFocus}
-                  onClick={() => applySimple(item.command)}
-                >
-                  <Icon name={item.icon} className="editor-toolbar-menu-icon" />
-                  <span>{item.label}</span>
-                </button>
-              ))}
               <button
                 type="button"
                 role="menuitem"

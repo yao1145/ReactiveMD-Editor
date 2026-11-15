@@ -216,10 +216,6 @@
     .editor-toolbar-slot.editor-toolbar-mobile-only {
       display: inline-flex;
     }
-
-    .editor-toolbar-more-menu .editor-toolbar-more-link {
-      display: none;
-    }
   }
 
   /* Mobile control set ------------------------------------------------- */
@@ -266,10 +262,6 @@
 
     .editor-toolbar-heading-label-compact {
       display: inline;
-    }
-
-    .editor-toolbar-more-menu .editor-toolbar-more-link {
-      display: flex;
     }
 
     .editor-toolbar-list-trigger {

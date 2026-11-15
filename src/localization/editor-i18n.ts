@@ -29,6 +29,7 @@ export interface EditorToolbarCopy {
   insert: string;
   insertMenuLabel: string;
   insertItems: {
+    link: string;
     image: string;
     table: string;
     divider: string;
@@ -57,7 +58,6 @@ export interface EditorToolbarCopy {
   download: string;
   more: string;
   moreMenuLabel: string;
-  linkMenuItem: string;
 }
 
 export interface EditorChromeCopy {
@@ -120,6 +120,7 @@ export const EDITOR_TOOLBAR_COPY: Record<EditorLocale, EditorToolbarCopy> = {
     insert: 'Insert',
     insertMenuLabel: 'Insert content',
     insertItems: {
+      link: 'Link',
       image: 'Image',
       table: 'Table',
       divider: 'Divider',
@@ -148,7 +149,6 @@ export const EDITOR_TOOLBAR_COPY: Record<EditorLocale, EditorToolbarCopy> = {
     download: 'Export',
     more: 'More',
     moreMenuLabel: 'More actions',
-    linkMenuItem: 'Link',
   },
   zh: {
     toolbarLabel: '文档编辑工具栏',
@@ -171,6 +171,7 @@ export const EDITOR_TOOLBAR_COPY: Record<EditorLocale, EditorToolbarCopy> = {
     insert: '插入',
     insertMenuLabel: '插入内容',
     insertItems: {
+      link: '链接',
       image: '图片',
       table: '表格',
       divider: '分隔线',
@@ -199,6 +200,5 @@ export const EDITOR_TOOLBAR_COPY: Record<EditorLocale, EditorToolbarCopy> = {
     download: '导出',
     more: '更多',
     moreMenuLabel: '更多操作',
-    linkMenuItem: '链接',
   },
 };
