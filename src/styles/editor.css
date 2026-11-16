@@ -116,9 +116,8 @@
   box-sizing: border-box;
 }
 
-.reactive-md-editor button,
-.reactive-md-editor input,
-.reactive-md-editor textarea {
+/* Chrome-only reset: embedded documents keep their themed control voice. */
+.reactive-md-editor :is(button, input, textarea):not(:where(.md-document, .md-document *)) {
   font: inherit;
 }
 
