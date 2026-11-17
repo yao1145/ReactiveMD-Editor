@@ -15,7 +15,6 @@ import {
   useCallback,
   useEffect,
   useId,
-  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -45,24 +44,14 @@ import {
   type EditorEdit,
   type EditorFormatState,
 } from '../authoring/editor-commands';
-import {
-  createLocalComponentCatalogForOptions,
-  filterLocalComponentCatalog,
-  insertLocalComponentFromOptions,
-  localCatalogAncestors,
-  localComponentCatalogGroups,
-  localComponentCatalogKey,
-  localComponentHelp,
-  type LocalComponentCatalogEntry,
-  type LocalCompileOptions,
-} from 'reactive-md/authoring';
-import { localCompileOptionsKey } from 'reactive-md';
+import type { LocalCompileOptions } from 'reactive-md/authoring';
 import { useEditorLocale } from '../localization/locale';
 import { EDITOR_TOOLBAR_COPY } from '../localization/editor-i18n';
 import type { EditorLocale } from '../contracts/types';
 import {type EditorSurface} from '../contracts/surface';
 import {Icon,ToolbarButton,getMenuItems,moveMenuFocus,keepEditorFocus,type IconName,type MenuEdge} from './toolbar-parts';
 import type {CompactToolbarChrome} from './toolbar-compact';
+import { NativeComponentPicker } from './native-component-picker';
 
 export interface EditorToolbarProps {
   editorSurface: EditorSurface;
@@ -248,7 +237,7 @@ export function EditorToolbar({
   const formatFrame = useRef<number | null>(null);
   const [openMenu, setOpenMenu] = useState<MenuId | null>(null);
   const [tabStopId, setTabStopId] = useState('heading');
-  const [query, setQuery] = useState('');
+  const [searchReset, setSearchReset] = useState(0);
   const [formatState, setFormatState] = useState<EditorFormatState>(INITIAL_FORMAT_STATE);
   const [menuPlacement, setMenuPlacement] = useState<CSSProperties | null>(null);
   const idPrefix = useId();
@@ -260,25 +249,6 @@ export function EditorToolbar({
   const nativeMenuId = `${idPrefix}-native-menu`;
   const locale = useEditorLocale();
   const copy = EDITOR_TOOLBAR_COPY[locale];
-  const optionsKey = localCompileOptionsKey(compileOptions);
-  // Authoring copy is excluded from the compile-semantics key by design. The
-  // catalog key adds it so a metadata-only configuration change rebuilds the
-  // menu, while an equivalent options object reuses the memoized catalog.
-  const catalogKey = useMemo(
-    () => localComponentCatalogKey(compileOptions, locale),
-    [compileOptions, locale, optionsKey],
-  );
-  const catalog = useMemo(() => {
-    try {
-      return createLocalComponentCatalogForOptions(compileOptions, locale);
-    } catch {
-      // A deferred external template failed its conformance check. Keep the
-      // editor usable with the default catalog; the conformance helper reports
-      // the concrete issue.
-      return createLocalComponentCatalogForOptions(undefined, locale);
-    }
-  }, [catalogKey]);
-  const [catalogAncestors, setCatalogAncestors] = useState<readonly string[]>([]);
   const headingItems = HEADING_ITEMS.map((item) => ({
     ...item,
     label: copy.headingLabels[item.level],
@@ -295,13 +265,6 @@ export function EditorToolbar({
     ...item,
     label: copy.insertItems[item.labelKey],
   }));
-
-  const filteredGroups = useMemo(() => localComponentCatalogGroups(
-    filterLocalComponentCatalog(catalog, {
-      query,
-      ancestors: catalogAncestors,
-    }),
-  ), [catalog, catalogAncestors, query]);
 
   const syncFormatState = useCallback(() => {
     if (!inputSurface.element()) {
@@ -393,14 +356,6 @@ export function EditorToolbar({
     return () => window.cancelAnimationFrame(frame);
   }, [openMenu]);
 
-  // Structural context is read once when the picker opens, from the caret the
-  // same surface reports to analysis and completion.
-  useEffect(() => {
-    if (openMenu !== 'native') return;
-    const { value, selection } = readEditor(inputSurface);
-    setCatalogAncestors(localCatalogAncestors(value, selection.start, compileOptions));
-  }, [openMenu, inputSurface, compileOptions]);
-
   const syncTabStop = useCallback(() => {
     const items = getToolbarButtons(rootRef.current);
     if (items.length === 0) return;
@@ -448,12 +403,6 @@ export function EditorToolbar({
     commitEdit(insertText(value, selection, emoji));
   };
 
-  const applyNativeComponent = (entry: LocalComponentCatalogEntry) => {
-    if (disabled) return;
-    const { value, selection } = readEditor(inputSurface);
-    commitEdit(insertLocalComponentFromOptions(compileOptions, entry.id, value, selection, locale));
-  };
-
   const handleUndo = () => {
     if (disabled) return;
     setOpenMenu(null);
@@ -476,7 +425,7 @@ export function EditorToolbar({
 
   const toggleMenu = (menu: MenuId) => {
     setOpenMenu((current) => (current === menu ? null : menu));
-    if (menu === 'native') setQuery('');
+    if (menu === 'native') setSearchReset(value => value + 1);
   };
 
   const openMenuFromKeyboard = (
@@ -485,7 +434,7 @@ export function EditorToolbar({
     edge: MenuEdge,
   ) => {
     event.preventDefault();
-    if (menu === 'native') setQuery('');
+    if (menu === 'native') setSearchReset(value => value + 1);
     if (openMenu === menu) {
       const items = getMenuItems(menuPanelRef.current);
       (edge === 'first' ? items[0] : items[items.length - 1])?.focus();
@@ -794,112 +743,24 @@ export function EditorToolbar({
         ) : null}
       </div>
 
-      <div className="editor-toolbar-slot editor-toolbar-slot-native">
-        <ToolbarButton
-          toolbarId="components"
-          label={copy.componentsTriggerLabel}
-          className="editor-toolbar-components-trigger"
-          tabStop={tabStopId === 'components'}
-          onFocus={() => setTabStopId('components')}
-          disabled={disabled}
-          popup="dialog"
-          expanded={openMenu === 'native'}
-          controls={nativeMenuId}
-          onClick={() => toggleMenu('native')}
-          onKeyDown={(event) => handleTriggerKeyDown('native', event)}
-        >
-          {compact?.componentsContent() ?? (
-            <>
-              <Icon name="sparkle" />
-              <span className="editor-toolbar-components-label">{copy.componentsLabel}</span>
-            </>
-          )}
-        </ToolbarButton>
-        {openMenu === 'native' ? (
-          <div
-            id={nativeMenuId}
-            ref={menuPanelRef}
-            className="editor-toolbar-popover editor-toolbar-native-menu"
-            role="dialog"
-            aria-label={copy.nativeMenuLabel}
-            onKeyDown={(event) => moveMenuFocus(event, menuPanelRef.current)}
-          >
-            <div className="editor-toolbar-native-head">
-              <span className="editor-toolbar-native-title">{copy.nativeTitle}</span>
-              <button
-                type="button"
-                className="editor-toolbar-close"
-                aria-label={copy.closeNativeLabel}
-                onMouseDown={keepEditorFocus}
-                onClick={closeNativePicker}
-              >
-                <Icon name="close" />
-              </button>
-            </div>
-            <div className="editor-toolbar-search">
-              <Icon name="search" className="editor-toolbar-search-icon" />
-              <input
-                ref={searchRef}
-                type="search"
-                className="editor-toolbar-search-input"
-                value={query}
-                placeholder={copy.searchPlaceholder}
-                aria-label={copy.searchLabel}
-                autoComplete="off"
-                spellCheck={false}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-            </div>
-            <div className="editor-toolbar-native-scroll" role="menu" aria-label={copy.nativeListLabel}>
-              {filteredGroups.length === 0 ? (
-                <p className="editor-toolbar-menu-empty">{copy.noMatchingComponents}</p>
-              ) : (
-                filteredGroups.map((group) => (
-                  <div
-                    key={group.id}
-                    className="editor-toolbar-native-group"
-                    role="group"
-                    aria-label={group.label}
-                  >
-                    <div className="editor-toolbar-native-group-title" aria-hidden="true">
-                      {group.label}
-                    </div>
-                    {group.entries.map((entry) => {
-                      const help = localComponentHelp(entry);
-                      return (
-                        <button
-                          key={entry.id}
-                          type="button"
-                          role="menuitem"
-                          tabIndex={-1}
-                          className="editor-toolbar-native-item"
-                          title={help === '' ? undefined : help}
-                          aria-description={help === '' ? undefined : help}
-                          onMouseDown={keepEditorFocus}
-                          onClick={() => applyNativeComponent(entry)}
-                        >
-                          <span className="editor-toolbar-native-copy">
-                            <span className="editor-toolbar-native-label">
-                              {entry.title}
-                              {entry.inline ? (
-                                <span className="editor-toolbar-native-badge">{copy.inlineBadge}</span>
-                              ) : null}
-                            </span>
-                            <span className="editor-toolbar-native-description">
-                              {entry.description}
-                            </span>
-                          </span>
-                          <Icon name="plus" className="editor-toolbar-native-add" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        ) : null}
-      </div>
+      <NativeComponentPicker
+        editorSurface={inputSurface}
+        compileOptions={compileOptions}
+        locale={locale}
+        compact={compact}
+        disabled={disabled}
+        open={openMenu === 'native'}
+        tabStop={tabStopId === 'components'}
+        menuId={nativeMenuId}
+        menuPanelRef={menuPanelRef}
+        searchRef={searchRef}
+        searchReset={searchReset}
+        onFocus={() => setTabStopId('components')}
+        onToggle={() => toggleMenu('native')}
+        onTriggerKeyDown={(event) => handleTriggerKeyDown('native', event)}
+        onClose={closeNativePicker}
+        onInsert={commitEdit}
+      />
 
       <div className="editor-toolbar-history" role="group" aria-label={copy.historyLabel}>
         {status ? <div className="editor-toolbar-host-status">{status}</div> : null}
