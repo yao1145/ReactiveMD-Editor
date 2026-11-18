@@ -43,6 +43,11 @@ Pass `preview` to render a document beside the source. The toolbar and
 authoring panel follow the same `compileOptions` as the preview, so analysis,
 completion and insertion stay consistent.
 
+Use the toolbar's Export action (`onExport`) to open the host's format picker,
+including PDF. To offer Default and Minimal component modes in host settings,
+pass the selected mode's `compileOptions` to the editor and preview so the
+catalog, analysis, rendering, and export use the same registry.
+
 ### Entry points
 
 | Specifier | Contents |

@@ -26,6 +26,7 @@ export type { SourceChange } from './codemirror/source-coordinates';
 export type { EditorSurface } from './contracts/surface';
 export type {
   EditorEdit,
+  EditorComponentMode,
   EditorLocale,
   EditorSelection,
   EditorTheme,

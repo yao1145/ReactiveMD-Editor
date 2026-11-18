@@ -5,6 +5,7 @@ import type { EditorLocale } from './command-types';
 export type { EditorLocale, EditorSelection, EditorEdit } from './command-types';
 export type EditorTheme = 'light' | 'dark' | 'auto';
 export type EditorViewMode = 'edit' | 'split' | 'preview';
+export type EditorComponentMode = 'default' | 'minimal';
 
 export interface ReactiveMarkdownEditorProps {
   value: string;
@@ -39,5 +40,6 @@ export interface ReactiveMarkdownEditorProps {
   toolbarLeading?: ReactNode;
   /** Host content inside the history group, immediately before undo. */
   toolbarStatus?: ReactNode;
+  /** Open the host's export dialog for formats such as HTML and PDF. */
   onExport?(): void;
 }

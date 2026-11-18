@@ -40,6 +40,10 @@ export function Editor({ value, onChange }: { value: string; onChange(value: str
 传入 `preview` 即可在源码旁渲染文档。工具栏和写作面板与预览使用相同的
 `compileOptions`，因此分析、补全和插入行为保持一致。
 
+工具栏的「导出」通过 `onExport` 打开宿主的格式选择，可以在其中提供 PDF。
+默认与精简模式由宿主设置。切换时同步更新编辑器和预览的 `compileOptions`，
+让组件目录、分析、渲染和导出使用同一份配置。
+
 ### 入口
 
 | Specifier | Contents |
