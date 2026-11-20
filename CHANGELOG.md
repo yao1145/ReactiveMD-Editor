@@ -2,7 +2,10 @@
 
 **English** · [中文](CHANGELOG-ch.md)
 
-## Unreleased
+## 0.2.0 (2026-11-20)
+
+The analysis Worker bundles `reactive-md@0.9.0`. The editor supports the 0.9.x
+engine series.
 
 ### Changed
 

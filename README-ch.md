@@ -5,16 +5,18 @@
 用于 Reactive MD 文档的 CodeMirror 6 源码编辑器。它以语法高亮渲染 Markdown
 源码，并提供格式化工具栏、写作辅助和可选的预览区域。
 
-`reactive-md-editor@0.1.0` 支持 `reactive-md@0.8.x` 引擎。
-请一起安装编辑器与引擎：
+`reactive-md-editor@0.2.0` 支持 `reactive-md@0.9.x` 引擎。已发布的 `0.1.0`
+版本仍与 `reactive-md@0.8.x` 配套。
 
 ## 安装
 
+一起安装编辑器和配套引擎。
+
 ```bash
-npm install reactive-md-editor@0.1.0 reactive-md@0.8.0 react@^19.0.0 react-dom@^19.0.0
+npm install reactive-md-editor@0.2.0 reactive-md@0.9.0 react@^19.0.0 react-dom@^19.0.0
 ```
 
-`reactive-md` 是 peer dependency，范围为 `^0.8.0`，覆盖稳定的 0.8 系列。
+`reactive-md` 是 peer dependency，范围为 `^0.9.0`，覆盖稳定的 0.9 系列。
 需要 React 19；`react-dom` 是可选 peer；Node 版本要求 22.12 或更高。
 
 编辑器已内置 CodeMirror，因此不要单独安装 CodeMirror 包。
@@ -88,9 +90,8 @@ chunk。如果发出的 Worker 仍包含未解析的包导入，打包消费者�
 
 ## 开发
 
-开发安装从 `vendor/reactive-md-0.8.0-2a1df8bdc715.tgz` 解析引擎。该文件从 npm
-下载并经过 registry 完整性校验，文件名带有 SHA-256 内容前缀。安装前请将它放入
-`vendor/`；它是开发依赖，不属于编辑器发布包的内容。
+开发环境使用 `vendor/` 下的 `reactive-md@0.9.0` tarball 构建 Worker。依赖路径包含
+SHA-256 前缀，`package-lock.json` 记录完整的 npm 完整性值。
 
 ```bash
 npm ci
@@ -103,18 +104,19 @@ npm run check
 
 ## 发布
 
-1. 核对 vendor tarball 与目标 `reactive-md` 发行包一致。若引擎内容变化，
-   将 `devDependencies.reactive-md` 更新为新的内容哈希文件名，刷新 lockfile
-   并重新构建。
+1. 准备发布时，将 `devDependencies.reactive-md` 指向目标引擎 tarball 的内容哈希
+   文件名，并刷新 lockfile。
 2. 运行 `npm run notices`。Worker 打包了引擎代码，因此
    `THIRD_PARTY_NOTICES.md` 必须对应稳定引擎。
 3. 在干净安装的环境下运行 `npm run check`。发布工作流还会接着运行
    `npm run notices` 和 `git diff --exit-code -- THIRD_PARTY_NOTICES.md`，因为发布
    打包使用 `--ignore-scripts`。
-4. 确认目标 `reactive-md` 版本已发布；如需要，先在引擎仓库完成发布。
-5. 再使用 **Publish npm package** 工作流发布 `reactive-md-editor`，正式版本
+4. 从引擎仓库发布。若使用已经验证并绑定到引擎提交的 tarball，在引擎发布工作流中
+   启用 `use_verified_release`。将 npm 完整性与锁定的 tarball 核对。如果哈希有差异，
+   使用 npm 上的包更新 `vendor/` 和 lockfile，再重跑编辑器检查。
+5. 再使用 **Publish npm package** 工作流发布 `reactive-md-editor@0.2.0`，正式版本
    选择 `dist_tag=latest`。工作流在发布新的编辑器版本前确认 registry 上存在
-   对应的 `reactive-md` 版本。
+   对应的引擎版本，并校验 lockfile 候选完整性与 npm 上已发布引擎包一致。
 
 候选版本试发时保持 `update_latest=false`，避免 `next` 发布移动 `latest`。正式的
 `dist_tag=latest` 发布直接设置该 tag，不使用额外的 `update_latest` 步骤。
