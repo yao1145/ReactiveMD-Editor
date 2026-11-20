@@ -114,11 +114,8 @@ export class CodeEditorController {
       EditorView.domEventHandlers({keydown:event=>{if(event.key!=='Escape'&&event.key!=='Tab')this.escapeTab=false;return false;},focus:()=>{this.emit();return false;},blur:()=>{this.escapeTab=false;this.emit();return false;},compositionstart:()=>{this.composingSession=true;this.escapeTab=false;return false;},compositionend:()=>{
         // The view may flush pending DOM changes in its own microtask, so apply
         // the deferred host value after it has settled the document.
-        queueMicrotask(()=>{
-          if(this.disposed)return;
-          this.composingSession=false;
-          if(!this.flushExternal())this.emit();
-        });
+        this.composingSession=false;
+        queueMicrotask(()=>this.settleComposition());
         if(this.analysisTimer!==null)clearTimeout(this.analysisTimer);
         this.analysisTimer=setTimeout(()=>{
           this.analysisTimer=null;
@@ -216,6 +213,15 @@ export class CodeEditorController {
     this.pendingExternal=null;
     this.applyExternal(pending.value,pending.reset);
     return true;
+  }
+  /** Wait for CodeMirror to finish its own composition flush before applying. */
+  private settleComposition(attempt=0){
+    if(this.disposed)return;
+    if(this.composingSession||this.view.compositionStarted){
+      if(attempt<40)setTimeout(()=>this.settleComposition(attempt+1),0);
+      return;
+    }
+    if(!this.flushExternal())this.emit();
   }
   edit(edit:EditorEdit){
     if(this.options.disabled||this.options.readOnly||this.disposed)return;
