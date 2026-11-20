@@ -88,7 +88,7 @@ check fails if the emitted Worker still contains unresolved package imports.
 ## Source layout
 
 `src/` groups code by responsibility: `contracts`, `authoring`, `components`,
-`localization`, `styles` and `codemirror`. See
+`mobile`, `localization`, `styles` and `codemirror`. See
 [source-layout-en.md](https://github.com/yao1145/ReactiveMD-Editor/blob/main/docs/source-layout-en.md)
 for the directory map and import rules, or
 [中文](https://github.com/yao1145/ReactiveMD-Editor/blob/main/docs/source-layout-ch.md).
@@ -96,7 +96,7 @@ for the directory map and import rules, or
 ## Development
 
 The development install resolves the engine from
-`vendor/reactive-md-0.8.0-087db7b17a3b.tgz`, downloaded from npm and verified
+`vendor/reactive-md-0.8.0-2a1df8bdc715.tgz`, downloaded from npm and verified
 against its registry integrity. The filename includes its SHA-256 prefix.
 Place that tarball in `vendor/` before installing; it is a development
 dependency and is not part of the published editor package.
@@ -107,26 +107,27 @@ npm run check
 ```
 
 `check` runs the type checker, the vitest suite, the Vite build and declaration
-emit, then packs the package and verifies the packed consumer. The package
-ships `dist`, the two READMEs, the two changelogs, `LICENSE` and
-`THIRD_PARTY_NOTICES.md`.
+emit, then packs the package and verifies the packed consumer for SSR, entry
+identity, the Worker asset and NodeNext declarations. The package ships `dist`,
+the two READMEs, the two changelogs, `LICENSE` and `THIRD_PARTY_NOTICES.md`.
 
 ## Release
 
-1. Confirm that the vendor tarball matches the final `reactive-md@0.8.0`
-   release. If engine contents change, update `devDependencies.reactive-md`
-   to the new content-addressed filename, refresh the lockfile, and rebuild.
+1. Confirm that the vendor tarball matches the intended `reactive-md` release.
+   If engine contents change, update `devDependencies.reactive-md` to the new
+   content-addressed filename, refresh the lockfile, and rebuild.
 2. Run `npm run notices`. The Worker bundles engine code, so
    `THIRD_PARTY_NOTICES.md` must reflect the stable engine.
 3. Run `npm run check` from a clean install. The workflow also runs
    `npm run notices` followed by
    `git diff --exit-code -- THIRD_PARTY_NOTICES.md`, because the release pack
    uses `--ignore-scripts`.
-4. Publish `reactive-md@0.8.0` to npm.
-5. Publish `reactive-md-editor@0.1.0` with the **Publish npm package** workflow
-   and `dist_tag=latest` for the stable release. The workflow confirms that
-   `reactive-md@0.8.0` exists on the registry before publishing a new editor
-   version.
+4. Confirm the intended `reactive-md` version is published; release the engine
+   from its own repository first if needed.
+5. Publish `reactive-md-editor` with the **Publish npm package** workflow and
+   `dist_tag=latest` for the stable release. The workflow confirms that the
+   matching `reactive-md` version exists on the registry before publishing a
+   new editor version.
 
 Keep `update_latest=false` for candidate trials, so a `next` publish does not
 move `latest`. A stable `dist_tag=latest` publish sets the tag directly and does

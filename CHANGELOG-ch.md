@@ -23,8 +23,13 @@
 - 基础组件样式表不再包含移动端钩子。`mobile/mobile.css` 与
   `mobile/toolbar-compact.css` 在 `styles/editor.css` 之后加载。
 - 将移动端测试集中到 `tests/mobile/`，并新增移动层边界与共享阈值的架构守卫。
+- 将原生组件选择器与 authoring 绑定、选区辅助模块从工具栏和编辑面板中拆出，
+  分别为 `components/native-component-picker.tsx`、
+  `authoring/source-selection.ts`、`contracts/authoring.ts` 与
+  `localization/source-authoring-copy.ts`，编辑行为不变。
 
-公开 API 与包入口保持不变。
+包入口路径未变。根入口与 `./codemirror` 入口新增导出 `EditorComponentMode` 类型
+（`'default' | 'minimal'`）。
 
 ## 0.1.0（2026-11-12）
 
@@ -60,17 +65,3 @@
 
 `ReactiveMarkdownEditor` 与 `ReactiveMarkdownCodeEditor` 仍是公共组件名，指向同一
 组件。`reactive-md-editor/commands` 会再导出 `reactive-md/authoring` 的纯命令。
-
-### 发布
-
-1. 核对 vendor tarball 与最终 `reactive-md@0.8.0` 发行包一致。若内容变化，更新
-   确切的依赖文件名与 lockfile，并重新构建，使 Worker 使用最终引擎。
-2. 运行 `npm run notices`，然后运行
-   `git diff --exit-code -- THIRD_PARTY_NOTICES.md`。
-3. 在干净安装的环境下运行 `npm run check`：类型检查、vitest、构建、声明文件
-   生成，以及针对 SSR、入口一致性、Worker 资源和 NodeNext 声明的打包消费者
-   检查。
-4. 发布 `reactive-md@0.8.0`。
-5. 使用 `dist_tag=latest` 发布 `reactive-md-editor@0.1.0`。发布工作流会确认
-   `reactive-md@0.8.0` 已存在于 registry，刷新 notices，并在版本已存在时跳过
-   发布步骤。

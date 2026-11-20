@@ -81,14 +81,14 @@ chunk。如果发出的 Worker 仍包含未解析的包导入，打包消费者�
 
 ## 源码结构
 
-`src/` 按职责分组：`contracts`、`authoring`、`components`、`localization`、
-`styles` 和 `codemirror`。目录映射与导入规则见
+`src/` 按职责分组：`contracts`、`authoring`、`components`、`mobile`、
+`localization`、`styles` 和 `codemirror`。目录映射与导入规则见
 [source-layout-ch.md](https://github.com/yao1145/ReactiveMD-Editor/blob/main/docs/source-layout-ch.md)，
 或 [English](https://github.com/yao1145/ReactiveMD-Editor/blob/main/docs/source-layout-en.md)。
 
 ## 开发
 
-开发安装从 `vendor/reactive-md-0.8.0-087db7b17a3b.tgz` 解析引擎。该文件从 npm
+开发安装从 `vendor/reactive-md-0.8.0-2a1df8bdc715.tgz` 解析引擎。该文件从 npm
 下载并经过 registry 完整性校验，文件名带有 SHA-256 内容前缀。安装前请将它放入
 `vendor/`；它是开发依赖，不属于编辑器发布包的内容。
 
@@ -98,22 +98,23 @@ npm run check
 ```
 
 `check` 会运行类型检查、vitest 测试套件、Vite 构建和声明文件生成，然后打包并验证
-打包后的消费者。发布包包含 `dist`、两份 README、两份变更记录、`LICENSE` 和
-`THIRD_PARTY_NOTICES.md`。
+打包后的消费者，覆盖 SSR、入口一致性、Worker 资源与 NodeNext 声明。发布包包含
+`dist`、两份 README、两份变更记录、`LICENSE` 和 `THIRD_PARTY_NOTICES.md`。
 
 ## 发布
 
-1. 核对 vendor tarball 与最终 `reactive-md@0.8.0` 发行包一致。若引擎内容变化，
-   将 `devDependencies.reactive-md` 更新为新的内容哈希文件名，刷新 lockfile 并重新构建。
+1. 核对 vendor tarball 与目标 `reactive-md` 发行包一致。若引擎内容变化，
+   将 `devDependencies.reactive-md` 更新为新的内容哈希文件名，刷新 lockfile
+   并重新构建。
 2. 运行 `npm run notices`。Worker 打包了引擎代码，因此
    `THIRD_PARTY_NOTICES.md` 必须对应稳定引擎。
 3. 在干净安装的环境下运行 `npm run check`。发布工作流还会接着运行
    `npm run notices` 和 `git diff --exit-code -- THIRD_PARTY_NOTICES.md`，因为发布
    打包使用 `--ignore-scripts`。
-4. 先将 `reactive-md@0.8.0` 发布到 npm。
-5. 再使用 **Publish npm package** 工作流发布 `reactive-md-editor@0.1.0`。正式版本
-   选择 `dist_tag=latest`。工作流在发布新的编辑器版本前确认
-   `reactive-md@0.8.0` 已存在于 registry。
+4. 确认目标 `reactive-md` 版本已发布；如需要，先在引擎仓库完成发布。
+5. 再使用 **Publish npm package** 工作流发布 `reactive-md-editor`，正式版本
+   选择 `dist_tag=latest`。工作流在发布新的编辑器版本前确认 registry 上存在
+   对应的 `reactive-md` 版本。
 
 候选版本试发时保持 `update_latest=false`，避免 `next` 发布移动 `latest`。正式的
 `dist_tag=latest` 发布直接设置该 tag，不使用额外的 `update_latest` 步骤。

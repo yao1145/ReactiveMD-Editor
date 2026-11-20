@@ -29,8 +29,14 @@
   `mobile/toolbar-compact.css` load after `styles/editor.css`.
 - Grouped mobile tests under `tests/mobile/` and added architecture guards for
   the mobile boundary and the shared thresholds.
+- Split the native component picker and the authoring binding and selection
+  helpers out of the toolbar and authoring panel, into
+  `components/native-component-picker.tsx`, `authoring/source-selection.ts`,
+  `contracts/authoring.ts` and `localization/source-authoring-copy.ts`. Editing
+  behaviour is unchanged.
 
-Public API and package entries are unchanged.
+Package entry paths are unchanged. The root entry and the `./codemirror` entry
+now export the `EditorComponentMode` type (`'default' | 'minimal'`).
 
 ## 0.1.0 (2026-11-12)
 
@@ -67,18 +73,3 @@ Initial independent editor release, paired with `reactive-md@0.8.0`.
 `ReactiveMarkdownEditor` and `ReactiveMarkdownCodeEditor` remain the public
 component names and resolve to the same component. `reactive-md-editor/commands`
 re-exports the pure commands from `reactive-md/authoring`.
-
-### Release
-
-1. Match the vendor tarball to the final `reactive-md@0.8.0` release. If its
-   contents change, update the exact dependency filename and lockfile, then
-   rebuild so the Worker uses the final engine.
-2. Run `npm run notices`, then
-   `git diff --exit-code -- THIRD_PARTY_NOTICES.md`.
-3. Run `npm run check` from a clean install: typecheck, vitest, build,
-   declaration emit, and the packed-consumer check for SSR, entry identity,
-   Worker asset and NodeNext declarations.
-4. Publish `reactive-md@0.8.0`.
-5. Publish `reactive-md-editor@0.1.0` with `dist_tag=latest`. The publish
-   workflow verifies that `reactive-md@0.8.0` is on the registry, refreshes
-   notices, and skips the publish step when the version already exists.
