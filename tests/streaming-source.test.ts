@@ -99,6 +99,25 @@ describe('streaming source updates',()=>{
     expect(transactions).toHaveLength(0);
   });
 
+  it('applies the host snapshot after composition committed text',async()=>{
+    const {controller}=create('abc');
+    controller.view.dispatch({selection:{anchor:1}});
+    compose(controller,'compositionstart');
+
+    // CodeMirror commits the IME text before compositionend reaches the host.
+    controller.view.dispatch({changes:{from:2,insert:'X'},selection:{anchor:3}});
+    expect(controller.source).toBe('abXc');
+
+    controller.setExternal('abXc from host');
+    expect(controller.source).toBe('abXc');
+
+    compose(controller,'compositionend');
+    await settle();
+
+    expect(controller.composing).toBe(false);
+    expect(controller.source).toBe('abXc from host');
+  });
+
   it('defers a document switch during composition and resets afterwards',async()=>{
     const {controller,transactions}=create('old text');
     controller.edit({value:'old text!',selection:{start:4,end:4}});
