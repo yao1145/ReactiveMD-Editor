@@ -1,4 +1,4 @@
-import {Annotation,Compartment,EditorSelection,EditorState,StateEffect,StateField,type Extension} from '@codemirror/state';
+import {Annotation,Compartment,EditorSelection,EditorState,StateEffect,StateField,Transaction,type Extension} from '@codemirror/state';
 import {Decoration,EditorView,ViewPlugin,keymap,lineNumbers,drawSelection,highlightActiveLine,highlightActiveLineGutter,placeholder,type DecorationSet,type ViewUpdate} from '@codemirror/view';
 import {defaultKeymap,history,historyKeymap,invertedEffects,isolateHistory,undo,redo,undoDepth,redoDepth,indentWithTab} from '@codemirror/commands';
 import {syntaxHighlighting} from '@codemirror/language';
@@ -26,6 +26,11 @@ function difference(before:string,after:string):SourceChange[]{
   while(to>from&&end>from&&before[to-1]===after[end-1]){to--;end--;}
   return from===to&&from===end?[]:[{from,to,insert:after.slice(from,end)}];
 }
+// A single splice is treated as an edit unless it replaces most of both
+// documents, which marks a different document sent under the same key.
+function related(before:string,after:string,change:SourceChange):boolean{
+  return change.to-change.from<=before.length/2||change.insert.length<=after.length/2;
+}
 
 /** Owns one EditorView. React configures it; CodeMirror owns its content DOM. */
 export class CodeEditorController {
@@ -36,6 +41,8 @@ export class CodeEditorController {
   private revision=0;
   private disposed=false;
   private suppressed=false;
+  private composingSession=false;
+  private pendingExternal:{value:string;reset:boolean}|null=null;
   private escapeTab=false;
   private revealTarget:number|null=null;
   private listeners=new Set<()=>void>();
@@ -104,8 +111,11 @@ export class CodeEditorController {
         }},indentWithTab,...defaultKeymap,...historyKeymap,...searchKeymap]),
       markdown(),syntaxHighlighting(sourceHighlightStyle),EditorView.lineWrapping,lintGutter(),visibleAnalysis,
       EditorView.updateListener.of(update=>this.updated(update)),
-      EditorView.domEventHandlers({keydown:event=>{if(event.key!=='Escape'&&event.key!=='Tab')this.escapeTab=false;return false;},focus:()=>{this.emit();return false;},blur:()=>{this.escapeTab=false;this.emit();return false;},compositionstart:()=>{this.escapeTab=false;return false;},compositionend:()=>{
-        queueMicrotask(()=>{if(!this.disposed)this.emit();});
+      EditorView.domEventHandlers({keydown:event=>{if(event.key!=='Escape'&&event.key!=='Tab')this.escapeTab=false;return false;},focus:()=>{this.emit();return false;},blur:()=>{this.escapeTab=false;this.emit();return false;},compositionstart:()=>{this.composingSession=true;this.escapeTab=false;return false;},compositionend:()=>{
+        // The view may flush pending DOM changes in its own microtask, so apply
+        // the deferred host value after it has settled the document.
+        this.composingSession=false;
+        queueMicrotask(()=>this.settleComposition());
         if(this.analysisTimer!==null)clearTimeout(this.analysisTimer);
         this.analysisTimer=setTimeout(()=>{
           this.analysisTimer=null;
@@ -148,7 +158,7 @@ export class CodeEditorController {
   get source(){return this.model.source;}
   get canUndo(){return undoDepth(this.view.state)>0;}
   get canRedo(){return redoDepth(this.view.state)>0;}
-  get composing(){return this.view.compositionStarted;}
+  get composing(){return this.composingSession||this.view.compositionStarted;}
   private emit(){for(const listener of this.listeners)listener();this.options.onUpdate();}
   private updated(update:ViewUpdate){
     if(this.disposed||this.suppressed)return;
@@ -171,10 +181,47 @@ export class CodeEditorController {
     this.options=options;if(changed&&!this.disposed)this.view.dispatch({effects:this.configuration.reconfigure(this.config())});
   }
   setExternal(value:string,reset=false){
-    if(this.disposed||!reset&&value===this.source)return;
-    this.seed=new SourceCoordinates(value);this.analysis=null;this.suppressed=true;
+    if(this.disposed)return;
+    if(this.composingSession||this.view.compositionStarted){
+      // The latest host snapshot wins; a document switch stays a reset.
+      this.pendingExternal={value,reset:reset||this.pendingExternal?.reset===true};
+      return;
+    }
+    if(!reset&&value===this.source)return;
+    this.pendingExternal=null;
+    this.applyExternal(value,reset);
+  }
+  private applyExternal(value:string,reset:boolean){
+    this.analysis=null;
+    if(!reset&&this.applyStreaming(value)){this.emit();return;}
+    this.seed=new SourceCoordinates(value);this.suppressed=true;
     try{this.view.setState(this.createState());this.view.dispatch(setDiagnostics(this.view.state,[]));this.view.scrollDOM.scrollTop=0;}finally{this.suppressed=false;}
     this.emit();
+  }
+  /** Applies a related snapshot in place so selection, history, and scroll survive. */
+  private applyStreaming(value:string):boolean{
+    const previous=this.model,next=new SourceCoordinates(value,previous.preferredLineBreak);
+    const changes=difference(previous.text,next.text),change=changes[0];
+    if(change&&!related(previous.text,next.text,change))return false;
+    this.seed=next;this.suppressed=true;
+    try{this.view.dispatch({changes:change?[change]:undefined,effects:rawSource.of(value),annotations:Transaction.addToHistory.of(false)});}finally{this.suppressed=false;}
+    return true;
+  }
+  private flushExternal():boolean{
+    const pending=this.pendingExternal;
+    if(!pending||this.disposed||this.view.compositionStarted||pending.value===this.source&&!pending.reset)return false;
+    this.pendingExternal=null;
+    this.applyExternal(pending.value,pending.reset);
+    return true;
+  }
+  /** Wait for CodeMirror to finish its own composition flush before applying. */
+  private settleComposition(attempt=0){
+    if(this.disposed)return;
+    if(this.composingSession||this.view.compositionStarted){
+      if(attempt<40)setTimeout(()=>this.settleComposition(attempt+1),0);
+      return;
+    }
+    if(!this.flushExternal())this.emit();
   }
   edit(edit:EditorEdit){
     if(this.options.disabled||this.options.readOnly||this.disposed)return;
@@ -231,5 +278,5 @@ export class CodeEditorController {
     }
     return Decoration.set(ranges,true);
   }
-  destroy(){if(this.disposed)return;this.disposed=true;if(this.analysisTimer!==null)clearTimeout(this.analysisTimer);this.pendingAnalysis=null;this.listeners.clear();this.view.destroy();}
+  destroy(){if(this.disposed)return;this.disposed=true;if(this.analysisTimer!==null)clearTimeout(this.analysisTimer);this.pendingAnalysis=null;this.pendingExternal=null;this.composingSession=false;this.listeners.clear();this.view.destroy();}
 }
