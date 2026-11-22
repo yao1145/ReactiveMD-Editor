@@ -265,6 +265,11 @@
       flex-basis: 100%;
     }
 
+    .source-authoring .authoring-pagination button {
+      width: 34px;
+      height: 34px;
+    }
+
     .authoring-completion-list {
       max-height: 180px;
     }
