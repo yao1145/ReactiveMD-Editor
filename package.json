@@ -81,7 +81,7 @@
     "jsdom": "26.1.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "reactive-md": "file:vendor/reactive-md-0.9.2-361b3acd5402.tgz",
+    "reactive-md": "file:vendor/reactive-md-0.9.2-2675f8860abf.tgz",
     "typescript": "7.0.2",
     "vite": "8.3.5",
     "vitest": "5.0.5"
