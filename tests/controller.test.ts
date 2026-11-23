@@ -56,10 +56,10 @@ describe('CodeEditorController',()=>{
     expect(transactions).toHaveLength(0);
   });
 
-  it('presents fatal engine diagnostics as CodeMirror errors',()=>{
+  it('preserves engine error and warning severity in CodeMirror',()=>{
     const {controller}=create('alpha beta');
     controller.setAnalysis(null,'alpha beta',[
-      {code:'local.parse.unclosed',message:'Unclosed block',severity:'fatal',range:{start:0,end:5},line:1,column:1},
+      {code:'local.parse.unclosed',message:'Unclosed block',severity:'error',range:{start:0,end:5},line:1,column:1},
       {code:'local.parse.spacing',message:'Spacing hint',severity:'warning',range:{start:6,end:10},line:1,column:7},
     ]);
 

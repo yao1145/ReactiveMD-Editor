@@ -30,6 +30,10 @@ The engine repository maintains the cross-package
 and its verification commands. This package's checks supply the evidence listed
 there, and support status is verified by running them locally.
 
+The engine and editor share a
+[stable public API contract](https://github.com/yao1145/ReactiveMD/blob/main/docs/compatibility/api-stability-en.md)
+and a [deprecation and migration policy](https://github.com/yao1145/ReactiveMD/blob/main/docs/compatibility/deprecation-en.md).
+
 ## Use
 
 ```tsx

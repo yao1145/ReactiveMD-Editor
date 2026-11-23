@@ -15,10 +15,6 @@ the `reactive-md/observability` entry and observer support in
   scheduler forwards compile diagnostics and Worker trace events to
   `onDiagnostic` and `onTrace`. Replacing the observer recreates the scheduler.
 
-### Fixed
-
-- Fatal engine diagnostics use CodeMirror's error severity.
-
 ## 0.2.0 (2026-11-20)
 
 The analysis Worker bundles `reactive-md@0.9.0`. The editor supports the 0.9.x

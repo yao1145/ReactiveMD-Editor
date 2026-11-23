@@ -25,6 +25,8 @@ npm install reactive-md-editor@0.2.1 reactive-md@0.9.2 react@^19.0.0 react-dom@^
 
 引擎仓库维护跨包的[支持矩阵](https://github.com/yao1145/ReactiveMD/blob/main/docs/compatibility/support-matrix-ch.md)及其验证命令。本包的检查提供其中列出的证据，支持状态通过本地运行这些检查验证。
 
+引擎和编辑器共用[稳定公共 API](https://github.com/yao1145/ReactiveMD/blob/main/docs/compatibility/api-stability-ch.md)与[弃用和迁移政策](https://github.com/yao1145/ReactiveMD/blob/main/docs/compatibility/deprecation-ch.md)。
+
 ## 使用
 
 ```tsx

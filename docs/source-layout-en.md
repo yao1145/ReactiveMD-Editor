@@ -80,7 +80,7 @@ or update that URL, because the build emits it as a separate browser asset.
 
 ## Analysis observability
 
-`ReactiveMarkdownCodeEditor` accepts an optional `observer` prop of type `LocalObserver` from `reactive-md/observability`. Its private analysis scheduler forwards diagnostics and Worker trace events to `onDiagnostic` and `onTrace`. Changing the observer recreates the scheduler and its Worker; keep the reference stable across renders. The engine peer requirement is `^0.9.2`. Fatal engine diagnostics use CodeMirror's error presentation.
+`ReactiveMarkdownCodeEditor` accepts an optional `observer` prop of type `LocalObserver` from `reactive-md/observability`. Its private analysis scheduler forwards diagnostics and Worker trace events to `onDiagnostic` and `onTrace`. Changing the observer recreates the scheduler and its Worker. Keep the reference stable across renders. The engine peer requirement is `^0.9.2`. CodeMirror preserves the engine's `error` and `warning` severities.
 
 ## Layout rules
 

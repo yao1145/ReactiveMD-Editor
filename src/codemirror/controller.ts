@@ -263,7 +263,7 @@ export class CodeEditorController {
     const lint = source === model.source ? diagnostics.map(diagnostic => ({
       from: model.toView(diagnostic.range.start),
       to: model.toView(diagnostic.range.end),
-      severity: diagnostic.severity === 'fatal' ? 'error' as const : diagnostic.severity,
+      severity: diagnostic.severity,
       message: diagnostic.message,
     })) : [];
     this.view.dispatch({effects:analysisChanged.of(null)});

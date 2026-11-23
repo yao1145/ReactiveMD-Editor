@@ -14,10 +14,6 @@
   `onDiagnostic` 与 `onTrace` 转发编译诊断和 Worker 链路事件。更换 observer
   会重建调度器。
 
-### 修复
-
-- 引擎的 fatal 诊断使用 CodeMirror 的 error 级别显示。
-
 ## 0.2.0（2026-11-20）
 
 分析 Worker 打包了 `reactive-md@0.9.0`。编辑器支持 0.9.x 引擎系列。

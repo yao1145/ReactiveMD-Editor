@@ -16,6 +16,9 @@ for (const required of ['THIRD_PARTY_NOTICES.md','LICENSE','README.md','README-c
   assert.ok(archive.files.some(f=>f.path===required),`Packed archive is missing ${required}`);
 }
 const pkg=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));
+for (const specifier of ['.', './codemirror', './commands', './styles.css', './codemirror/styles.css', './package.json']) {
+  assert.ok(Object.hasOwn(pkg.exports, specifier), `Stable editor package entry was removed: ${specifier}`);
+}
 const vendor=join(root,pkg.devDependencies['reactive-md'].slice(5));
 writeFileSync(join(consumer,'package.json'),JSON.stringify({private:true,type:'module',dependencies:{
   'reactive-md': 'file:'+vendor.replaceAll('\\','/'),
@@ -37,7 +40,28 @@ assert.equal(typeof insertTemplate,'function');
 assert.ok(renderToStaticMarkup(createElement(ReactiveMarkdownEditor,{value:'hello',onChange(){}})).length);
 `);
 run(['smoke.mjs'],consumer);
-writeFileSync(join(consumer,'consumer.ts'),"import {ReactiveMarkdownEditor,type ReactiveMarkdownEditorProps} from 'reactive-md-editor';\nimport {ReactiveMarkdownCodeEditor} from 'reactive-md-editor/codemirror';\nimport {insertTemplate} from 'reactive-md-editor/commands';\nvoid ReactiveMarkdownEditor; void ReactiveMarkdownCodeEditor; void insertTemplate; const p:ReactiveMarkdownEditorProps={value:'hello',onChange(){}}; void p;\n");
+writeFileSync(join(consumer, 'consumer.ts'), `
+import { ReactiveMarkdownEditor, type ReactiveMarkdownEditorProps, type ReactiveMarkdownEditorHandle } from 'reactive-md-editor';
+import { ReactiveMarkdownCodeEditor } from 'reactive-md-editor/codemirror';
+import { insertTemplate } from 'reactive-md-editor/commands';
+const props: ReactiveMarkdownEditorProps = {
+  value: 'hello',
+  onChange() {},
+  observer: {
+    onDiagnostic(diagnostic) {
+      const severity: 'error' | 'warning' = diagnostic.severity;
+      void severity;
+    },
+  },
+};
+export function focusEditor(handle: ReactiveMarkdownEditorHandle) {
+  handle.focus({ start: 0, end: 0 });
+}
+void ReactiveMarkdownEditor;
+void ReactiveMarkdownCodeEditor;
+void insertTemplate;
+void props;
+`);
 writeFileSync(join(consumer,'tsconfig.json'),JSON.stringify({compilerOptions:{target:'ES2022',module:'NodeNext',moduleResolution:'NodeNext',strict:true,skipLibCheck:false,noEmit:true},include:['consumer.ts']}));
 run([join(consumer,'node_modules/typescript/bin/tsc'),'-p','tsconfig.json'],consumer);
 const workers=readdirSync(join(root,'dist/assets')).filter(f=>f.startsWith('analysis-worker') && f.endsWith('.js'));
