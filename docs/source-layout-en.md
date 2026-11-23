@@ -78,6 +78,10 @@ supplied by the mobile sheet. All selectors stay scoped to
 `ReactiveMarkdownCodeEditor.tsx`. Move the worker together with the editor shell
 or update that URL, because the build emits it as a separate browser asset.
 
+## Analysis observability
+
+`ReactiveMarkdownCodeEditor` accepts an optional `observer` prop of type `LocalObserver` from `reactive-md/observability`. Its private analysis scheduler forwards diagnostics and Worker trace events to `onDiagnostic` and `onTrace`. Use a stable observer reference across renders. The engine peer requirement is `^0.9.1`. Fatal engine diagnostics use CodeMirror's error presentation.
+
 ## Layout rules
 
 - Add files inside an existing group. Add no new public entry or barrel.

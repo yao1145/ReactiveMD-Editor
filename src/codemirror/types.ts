@@ -1,6 +1,7 @@
 import type {ReactiveMarkdownEditorProps,EditorSelection,EditorViewMode} from '../contracts/types';
 import type {MobileEditorProps} from '../mobile/types';
 import type {AuthorAnalysis,Diagnostic,SourceRange} from 'reactive-md';
+import type {LocalObserver} from 'reactive-md/observability';
 import type {SourceChange} from './source-coordinates';
 
 export interface EditorTransaction {
@@ -23,6 +24,8 @@ export interface ReactiveMarkdownCodeEditorProps extends ReactiveMarkdownEditorP
   onTransaction?(transaction:EditorTransaction):void;
   /** Optional compile worker factory for CSP-sensitive hosts. */
   createAnalysisWorker?:()=>Worker;
+  /** Receives structured compile diagnostics and Worker trace events. */
+  observer?: LocalObserver;
 }
 export interface ReactiveMarkdownCodeEditorHandle {
   focus(selection?:EditorSelection):void;

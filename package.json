@@ -57,7 +57,7 @@
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "reactive-md": "^0.9.0"
+    "reactive-md": "^0.9.1"
   },
   "peerDependenciesMeta": {
     "react-dom": {
@@ -81,7 +81,7 @@
     "jsdom": "26.1.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "reactive-md": "file:vendor/reactive-md-0.9.0-028c57f21f2c.tgz",
+    "reactive-md": "file:vendor/reactive-md-0.9.1-08b43231b94c.tgz",
     "typescript": "7.0.2",
     "vite": "8.3.5",
     "vitest": "5.0.5"

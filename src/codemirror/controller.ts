@@ -260,7 +260,12 @@ export class CodeEditorController {
     this.pendingAnalysis=null;
     this.analysis=value&&source===this.source?{source,value}:null;
     const model=this.model;
-    const lint=source===model.source?diagnostics.map(d=>({from:model.toView(d.range.start),to:model.toView(d.range.end),severity:d.severity,message:d.message})):[];
+    const lint = source === model.source ? diagnostics.map(diagnostic => ({
+      from: model.toView(diagnostic.range.start),
+      to: model.toView(diagnostic.range.end),
+      severity: diagnostic.severity === 'fatal' ? 'error' as const : diagnostic.severity,
+      message: diagnostic.message,
+    })) : [];
     this.view.dispatch({effects:analysisChanged.of(null)});
     this.view.dispatch(setDiagnostics(this.view.state,lint));
   }

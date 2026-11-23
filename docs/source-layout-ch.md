@@ -60,6 +60,10 @@
 
 `codemirror/analysis-worker.ts` 由 `ReactiveMarkdownCodeEditor.tsx` 中的 `new URL('./analysis-worker.ts', import.meta.url)` 引用。移动 Worker 时要与编辑器外壳一起移动，或更新这个 URL，因为构建会把它输出为独立的浏览器资源。
 
+## 分析可观察性
+
+`ReactiveMarkdownCodeEditor` 接受可选的 `observer` prop，类型为 `reactive-md/observability` 中的 `LocalObserver`。私有分析调度器通过 `onDiagnostic` 和 `onTrace` 转发诊断与 Worker 链路事件。跨渲染保持 observer 引用稳定。引擎 peer 要求为 `^0.9.1`。引擎的 fatal 诊断使用 CodeMirror 的 error 样式显示。
+
 ## 目录规则
 
 - 新文件放入已有分组，不新增公开入口或汇总出口。

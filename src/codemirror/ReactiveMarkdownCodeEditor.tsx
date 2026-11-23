@@ -92,6 +92,7 @@ export const ReactiveMarkdownCodeEditor=forwardRef<ReactiveMarkdownCodeEditorHan
     const worker=new LocalCompileScheduler({
       createWorker:()=>latest.current.createAnalysisWorker?.()??new Worker(new URL('./analysis-worker.ts',import.meta.url),{type:'module'}),
       includeAuthorAnalysis:true,shareResults:true,delay:20,
+      observer: latest.current.observer,
       onResult(outcome){
         const key=localCompileOptionsKey(outcome.options);
         if(outcome.source===sourceRef.current&&key===keyRef.current)setWorkerAnalysis({source:outcome.source,optionsKey:key,analysis:outcome.analysis??EMPTY});
@@ -99,7 +100,7 @@ export const ReactiveMarkdownCodeEditor=forwardRef<ReactiveMarkdownCodeEditorHan
     });
     scheduler.current=worker;worker.schedule(sourceRef.current,latest.current.compileOptions);
     return()=>{scheduler.current=null;worker.dispose();};
-  },[privateAnalysis,optionsKey,props.createAnalysisWorker,props.documentKey]);
+  },[privateAnalysis,optionsKey,props.createAnalysisWorker,props.documentKey,props.observer]);
   useEffect(()=>{scheduler.current?.schedule(source,latest.current.compileOptions);},[source]);
   const envelope=props.analysis===undefined?workerAnalysis:props.analysis;
   const analysis=authoring&&envelope?.source===source&&envelope.optionsKey===optionsKey?envelope.analysis:EMPTY;
