@@ -6,8 +6,8 @@ CodeMirror 6 source editor for Reactive MD documents. It renders the Markdown
 source with syntax highlighting, a formatting toolbar, authoring aids and an
 optional preview slot.
 
-`reactive-md-editor@0.2.1` requires the `reactive-md@^0.9.2` engine peer. The
-published `0.1.0` release remains paired with `reactive-md@0.8.x`.
+`reactive-md-editor@0.2.1` pairs with `reactive-md@0.9.2` and declares
+the engine peer `^0.9.2`.
 
 ## Install
 
@@ -79,6 +79,9 @@ component tree.
 
 The editor now lives in its own package. Move the import, install
 `reactive-md-editor`, and keep `reactive-md` as the engine dependency.
+
+Hosts on engine 0.9.0 or 0.9.1 can keep editor 0.2.0. The earlier editor
+0.1.0 release pairs with engine 0.8.x.
 
 | Previous import | 0.1.0 import |
 | --- | --- |

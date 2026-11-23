@@ -5,8 +5,8 @@
 用于 Reactive MD 文档的 CodeMirror 6 源码编辑器。它以语法高亮渲染 Markdown
 源码，并提供格式化工具栏、写作辅助和可选的预览区域。
 
-`reactive-md-editor@0.2.1` 要求 `reactive-md@^0.9.2` 引擎 peer。已发布的
-`0.1.0` 版本仍与 `reactive-md@0.8.x` 配套。
+`reactive-md-editor@0.2.1` 与 `reactive-md@0.9.2` 配套，声明的引擎
+peer 范围为 `^0.9.2`。
 
 ## 安装
 
@@ -69,6 +69,9 @@ export function Editor({ value, onChange }: { value: string; onChange(value: str
 
 编辑器现在位于独立包中。修改导入 specifier，安装 `reactive-md-editor`，并继续
 把 `reactive-md` 作为引擎依赖。
+
+仍使用引擎 0.9.0 或 0.9.1 的宿主可保留编辑器 0.2.0。更早的编辑器 0.1.0
+与引擎 0.8.x 配套。
 
 | 原导入 | 0.1.0 导入 |
 | --- | --- |
