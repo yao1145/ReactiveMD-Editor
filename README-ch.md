@@ -21,6 +21,10 @@ npm install reactive-md-editor@0.2.0 reactive-md@0.9.0 react@^19.0.0 react-dom@^
 
 编辑器已内置 CodeMirror，因此不要单独安装 CodeMirror 包。
 
+## 支持范围
+
+引擎仓库维护跨包的[支持矩阵](https://github.com/yao1145/ReactiveMD/blob/main/docs/compatibility/support-matrix-ch.md)及其验证命令。本包的检查提供其中列出的证据，支持状态通过本地运行这些检查验证。
+
 ## 使用
 
 ```tsx

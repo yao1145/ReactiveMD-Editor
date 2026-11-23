@@ -23,6 +23,13 @@ package requires Node 22.12 or newer.
 
 The editor bundles CodeMirror, so do not add CodeMirror packages separately.
 
+## Support
+
+The engine repository maintains the cross-package
+[support matrix](https://github.com/yao1145/ReactiveMD/blob/main/docs/compatibility/support-matrix-en.md)
+and its verification commands. This package's checks supply the evidence listed
+there, and support status is verified by running them locally.
+
 ## Use
 
 ```tsx
