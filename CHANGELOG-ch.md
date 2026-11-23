@@ -2,6 +2,22 @@
 
 **中文** · [English](CHANGELOG.md)
 
+## 0.2.1（2026-11-23）
+
+编辑器要求 `reactive-md@^0.9.2` 引擎 peer。该引擎补丁新增
+`reactive-md/observability` 入口与 `LocalCompileScheduler` 的 observer 支持。
+
+### 新增
+
+- `ReactiveMarkdownCodeEditor` 接受可选的 `observer` prop，类型为
+  `reactive-md/observability` 中的 `LocalObserver`。私有分析调度器通过
+  `onDiagnostic` 与 `onTrace` 转发编译诊断和 Worker 链路事件。更换 observer
+  会重建调度器。
+
+### 修复
+
+- 引擎的 fatal 诊断使用 CodeMirror 的 error 级别显示。
+
 ## 0.2.0（2026-11-20）
 
 分析 Worker 打包了 `reactive-md@0.9.0`。编辑器支持 0.9.x 引擎系列。

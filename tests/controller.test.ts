@@ -1,4 +1,5 @@
 /** @vitest-environment jsdom */
+import {forEachDiagnostic} from '@codemirror/lint';
 import {afterEach,describe,expect,it} from 'vitest';
 import {CodeEditorController,type ControllerOptions} from '../src/codemirror/controller';
 import type {EditorTransaction} from '../src/codemirror/types';
@@ -53,5 +54,22 @@ describe('CodeEditorController',()=>{
 
     expect(controller.source).toBe('fixed');
     expect(transactions).toHaveLength(0);
+  });
+
+  it('presents fatal engine diagnostics as CodeMirror errors',()=>{
+    const {controller}=create('alpha beta');
+    controller.setAnalysis(null,'alpha beta',[
+      {code:'local.parse.unclosed',message:'Unclosed block',severity:'fatal',range:{start:0,end:5},line:1,column:1},
+      {code:'local.parse.spacing',message:'Spacing hint',severity:'warning',range:{start:6,end:10},line:1,column:7},
+    ]);
+
+    const diagnostics:{from:number;to:number;severity:string;message:string}[]=[];
+    forEachDiagnostic(controller.view.state,diagnostic=>{
+      diagnostics.push({from:diagnostic.from,to:diagnostic.to,severity:diagnostic.severity,message:diagnostic.message});
+    });
+    expect(diagnostics).toEqual([
+      {from:0,to:5,severity:'error',message:'Unclosed block'},
+      {from:6,to:10,severity:'warning',message:'Spacing hint'},
+    ]);
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "reactive-md-editor",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CodeMirror 6 source editor for Reactive MD documents.",
   "keywords": [
     "markdown",
@@ -57,7 +57,7 @@
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "reactive-md": "^0.9.1"
+    "reactive-md": "^0.9.2"
   },
   "peerDependenciesMeta": {
     "react-dom": {
@@ -81,7 +81,7 @@
     "jsdom": "26.1.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "reactive-md": "file:vendor/reactive-md-0.9.1-08b43231b94c.tgz",
+    "reactive-md": "file:vendor/reactive-md-0.9.2-c172cf501201.tgz",
     "typescript": "7.0.2",
     "vite": "8.3.5",
     "vitest": "5.0.5"

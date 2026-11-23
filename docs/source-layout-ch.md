@@ -62,7 +62,7 @@
 
 ## 分析可观察性
 
-`ReactiveMarkdownCodeEditor` 接受可选的 `observer` prop，类型为 `reactive-md/observability` 中的 `LocalObserver`。私有分析调度器通过 `onDiagnostic` 和 `onTrace` 转发诊断与 Worker 链路事件。跨渲染保持 observer 引用稳定。引擎 peer 要求为 `^0.9.1`。引擎的 fatal 诊断使用 CodeMirror 的 error 样式显示。
+`ReactiveMarkdownCodeEditor` 接受可选的 `observer` prop，类型为 `reactive-md/observability` 中的 `LocalObserver`。私有分析调度器通过 `onDiagnostic` 和 `onTrace` 转发诊断与 Worker 链路事件。更换 observer 会重建调度器及其 Worker；跨渲染保持引用稳定。引擎 peer 要求为 `^0.9.2`。引擎的 fatal 诊断使用 CodeMirror 的 error 样式显示。
 
 ## 目录规则
 

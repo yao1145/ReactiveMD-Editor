@@ -5,19 +5,19 @@
 用于 Reactive MD 文档的 CodeMirror 6 源码编辑器。它以语法高亮渲染 Markdown
 源码，并提供格式化工具栏、写作辅助和可选的预览区域。
 
-`reactive-md-editor@0.2.0` 支持 `reactive-md@0.9.x` 引擎。已发布的 `0.1.0`
-版本仍与 `reactive-md@0.8.x` 配套。
+`reactive-md-editor@0.2.1` 要求 `reactive-md@^0.9.2` 引擎 peer。已发布的
+`0.1.0` 版本仍与 `reactive-md@0.8.x` 配套。
 
 ## 安装
 
 一起安装编辑器和配套引擎。
 
 ```bash
-npm install reactive-md-editor@0.2.0 reactive-md@0.9.0 react@^19.0.0 react-dom@^19.0.0
+npm install reactive-md-editor@0.2.1 reactive-md@0.9.2 react@^19.0.0 react-dom@^19.0.0
 ```
 
-`reactive-md` 是 peer dependency，范围为 `^0.9.0`，覆盖稳定的 0.9 系列。
-需要 React 19；`react-dom` 是可选 peer；Node 版本要求 22.12 或更高。
+`reactive-md` 是 peer dependency，范围为 `^0.9.2`，覆盖 0.9.2 及之后的 0.9
+版本。需要 React 19；`react-dom` 是可选 peer；Node 版本要求 22.12 或更高。
 
 编辑器已内置 CodeMirror，因此不要单独安装 CodeMirror 包。
 
@@ -85,6 +85,10 @@ export function Editor({ value, onChange }: { value: string; onChange(value: str
 将 React 和所有 `reactive-md` 子路径保持为外部依赖，CodeMirror 则打包进一个共享
 chunk。如果发出的 Worker 仍包含未解析的包导入，打包消费者检查会失败。
 
+传入 `reactive-md/observability` 的 `observer` 可接收编译诊断和 Worker 链路事件。
+组件对每条送达的诊断调用 `onDiagnostic`，对调度器和 Worker 事件调用 `onTrace`。
+更换 observer 会重建分析调度器。
+
 ## 源码结构
 
 `src/` 按职责分组：`contracts`、`authoring`、`components`、`mobile`、
@@ -94,8 +98,9 @@ chunk。如果发出的 Worker 仍包含未解析的包导入，打包消费者�
 
 ## 开发
 
-开发环境使用 `vendor/` 下的 `reactive-md@0.9.0` tarball 构建 Worker。依赖路径包含
-SHA-256 前缀，`package-lock.json` 记录完整的 npm 完整性值。
+开发环境使用 `vendor/` 下的 `reactive-md@0.9.2` 候选 tarball 构建 Worker。依赖路径包含
+SHA-256 前缀，`package-lock.json` 记录完整的 npm 完整性值。该候选与 0.2.1 的 peer
+范围一致。
 
 ```bash
 npm ci
@@ -109,7 +114,7 @@ npm run check
 ## 发布
 
 1. 准备发布时，将 `devDependencies.reactive-md` 指向目标引擎 tarball 的内容哈希
-   文件名，并刷新 lockfile。
+   文件名，并刷新 lockfile。0.2.1 发行版与 `reactive-md@0.9.2` 配套。
 2. 运行 `npm run notices`。Worker 打包了引擎代码，因此
    `THIRD_PARTY_NOTICES.md` 必须对应稳定引擎。
 3. 在干净安装的环境下运行 `npm run check`。发布工作流还会接着运行
@@ -118,7 +123,7 @@ npm run check
 4. 从引擎仓库发布。若使用已经验证并绑定到引擎提交的 tarball，在引擎发布工作流中
    启用 `use_verified_release`。将 npm 完整性与锁定的 tarball 核对。如果哈希有差异，
    使用 npm 上的包更新 `vendor/` 和 lockfile，再重跑编辑器检查。
-5. 再使用 **Publish npm package** 工作流发布 `reactive-md-editor@0.2.0`，正式版本
+5. 再使用 **Publish npm package** 工作流发布 `reactive-md-editor@0.2.1`，正式版本
    选择 `dist_tag=latest`。工作流在发布新的编辑器版本前确认 registry 上存在
    对应的引擎版本，并校验 lockfile 候选完整性与 npm 上已发布引擎包一致。
 

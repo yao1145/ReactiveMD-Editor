@@ -6,7 +6,7 @@ CodeMirror 6 source editor for Reactive MD documents. It renders the Markdown
 source with syntax highlighting, a formatting toolbar, authoring aids and an
 optional preview slot.
 
-`reactive-md-editor@0.2.0` supports the `reactive-md@0.9.x` engine series. The
+`reactive-md-editor@0.2.1` requires the `reactive-md@^0.9.2` engine peer. The
 published `0.1.0` release remains paired with `reactive-md@0.8.x`.
 
 ## Install
@@ -14,11 +14,11 @@ published `0.1.0` release remains paired with `reactive-md@0.8.x`.
 Install the editor and its engine together.
 
 ```bash
-npm install reactive-md-editor@0.2.0 reactive-md@0.9.0 react@^19.0.0 react-dom@^19.0.0
+npm install reactive-md-editor@0.2.1 reactive-md@0.9.2 react@^19.0.0 react-dom@^19.0.0
 ```
 
-`reactive-md` is a peer dependency with the range `^0.9.0`, covering stable
-0.9 releases. React 19 is required, `react-dom` is an optional peer, and the
+`reactive-md` is a peer dependency with the range `^0.9.2`, covering 0.9 releases
+from 0.9.2 onward. React 19 is required, `react-dom` is an optional peer, and the
 package requires Node 22.12 or newer.
 
 The editor bundles CodeMirror, so do not add CodeMirror packages separately.
@@ -94,6 +94,11 @@ it imports. The library entries keep React and every `reactive-md` subpath
 external, and CodeMirror is bundled into one shared chunk. The packed-consumer
 check fails if the emitted Worker still contains unresolved package imports.
 
+Pass an `observer` from `reactive-md/observability` to receive compile diagnostics
+and Worker trace events. The component calls `onDiagnostic` for each delivered
+diagnostic and `onTrace` for scheduler and Worker events. Replacing the observer
+recreates the analysis scheduler.
+
 ## Source layout
 
 `src/` groups code by responsibility: `contracts`, `authoring`, `components`,
@@ -105,9 +110,10 @@ for the directory map and import rules, or
 ## Development
 
 The development install resolves the engine from the content-addressed
-`reactive-md@0.9.0` tarball in `vendor/`. The dependency path includes the
-SHA-256 prefix, and `package-lock.json` records the full npm integrity value.
-The tarball is a development dependency used to build the Worker.
+`reactive-md@0.9.2` candidate tarball in `vendor/`. The dependency path includes
+the SHA-256 prefix, and `package-lock.json` records the full npm integrity value.
+The tarball is a development dependency used to build the Worker and matches the
+0.2.1 peer range.
 
 ```bash
 npm ci
@@ -122,8 +128,9 @@ the two READMEs, the two changelogs, `LICENSE` and `THIRD_PARTY_NOTICES.md`.
 ## Release
 
 1. Confirm that the vendor tarball matches the intended `reactive-md` release.
-   The release uses `reactive-md@0.9.0`. Update `devDependencies.reactive-md` to
-   its content-addressed filename and refresh the lockfile when preparing it.
+   The 0.2.1 release pairs with `reactive-md@0.9.2`. Update
+   `devDependencies.reactive-md` to its content-addressed filename and refresh
+   the lockfile when preparing it.
 2. Run `npm run notices`. The Worker bundles engine code, so
    `THIRD_PARTY_NOTICES.md` must reflect the stable engine.
 3. Run `npm run check` from a clean install. The workflow also runs
@@ -135,7 +142,7 @@ the two READMEs, the two changelogs, `LICENSE` and `THIRD_PARTY_NOTICES.md`.
    engine workflow. Compare npm integrity with the pinned tarball. If the hashes
    differ, vendor the published artifact, refresh the lockfile and rerun the
    editor checks.
-5. Publish `reactive-md-editor@0.2.0` with the **Publish npm package** workflow and
+5. Publish `reactive-md-editor@0.2.1` with the **Publish npm package** workflow and
    `dist_tag=latest` for the stable release. The workflow confirms the pinned
    engine version and verifies that its lockfile integrity matches npm's
    published engine artifact before publishing a new editor version.

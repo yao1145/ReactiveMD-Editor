@@ -2,6 +2,23 @@
 
 **English** · [中文](CHANGELOG-ch.md)
 
+## 0.2.1 (2026-11-23)
+
+The editor requires the `reactive-md@^0.9.2` engine peer. This engine patch adds
+the `reactive-md/observability` entry and observer support in
+`LocalCompileScheduler`.
+
+### Added
+
+- `ReactiveMarkdownCodeEditor` accepts an optional `observer` prop typed as
+  `LocalObserver` from `reactive-md/observability`. The private analysis
+  scheduler forwards compile diagnostics and Worker trace events to
+  `onDiagnostic` and `onTrace`. Replacing the observer recreates the scheduler.
+
+### Fixed
+
+- Fatal engine diagnostics use CodeMirror's error severity.
+
 ## 0.2.0 (2026-11-20)
 
 The analysis Worker bundles `reactive-md@0.9.0`. The editor supports the 0.9.x
